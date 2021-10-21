@@ -17,8 +17,16 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 public class MainActivity extends AppCompatActivity {
-    private double[][] maskBlur = {{0, 0.2, 0}, {0.2, 0, 0.2}, {0, 0.2, 0}};
-    private double[][] maskSharpen = {{0, -1, 0}, {-1, 5, -1}, {0, -1, 0}};
+    private final double[][] maskBlur = {
+            {0, 0.2, 0},
+            {0.2, 0.2, 0.2},
+            {0, 0.2, 0}
+    };
+    private final double[][] maskSharpen = {
+            {0, -1, 0},
+            {-1, 5, -1},
+            {0, -1, 0}
+    };
 
     private LinearLayout actionsLayout;
 
@@ -145,36 +153,36 @@ public class MainActivity extends AppCompatActivity {
 
     private int getMatrixOfCoefficients(@ColorInt int[][] argbValues, int x, int y, String channel, double[][] coefficients) {
         int result;
-        int summ = 0;
+        int summa = 0;
 
 
         switch (channel) {
             case "RED":
                 for (int i = -1; i <= 1; i++) {
                     for (int j = -1; j <= 1; j++) {
-                        summ += 0.12211* Color.red(argbValues[x + i][y + j]);
+                        summa += coefficients[i + 1][j + 1] * Color.red(argbValues[x + i][y + j]);
                     }
                 }
-                summ = Math.round(summ);
-                result = summ;
+                summa = Math.round(summa);
+                result = summa;
                 break;
             case "GREEN":
                 for (int i = -1; i <= 1; i++) {
                     for (int j = -1; j <= 1; j++) {
-                        summ += 0.12211* Color.green(argbValues[x + i][y + j]);
+                        summa +=coefficients[i + 1][j + 1] * Color.green(argbValues[x + i][y + j]);
                     }
                 }
-                summ = Math.round(summ);
-                result = summ;
+                summa = Math.round(summa);
+                result = summa;
                 break;
             case "BLUE":
                 for (int i = -1; i <= 1; i++) {
                     for (int j = -1; j <= 1; j++) {
-                        summ += 0.122111 * Color.blue(argbValues[x + i][y + j]);
+                        summa += coefficients[i + 1][j + 1] * Color.blue(argbValues[x + i][y + j]);
                     }
                 }
-                summ = Math.round(summ);
-                result = summ;
+                summa = Math.round(summa);
+                result = summa;
                 break;
             default:
                 result = Color.BLUE;
@@ -201,18 +209,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void makeSharpen(View view) {
+        int[][] tempArgbValues = new int[bitmap2.getWidth()][bitmap2.getHeight()];
         for (int i = 1; i < bitmap2.getWidth() - 1; i++) {
             for (int j = 1; j < bitmap2.getHeight() - 1; j++) {
                 int newA = Color.alpha(argbValues2[i][j]);
-                int newR = Math.min(this.getMatrixOfCoefficients(argbValues2, i, j, "RED", maskBlur), 255);
-                int newB = Math.min(this.getMatrixOfCoefficients(argbValues2, i, j, "BLUE", maskBlur), 255);
-                int newG = Math.min(this.getMatrixOfCoefficients(argbValues2, i, j, "GREEN", maskBlur), 255);
+                int newR = Math.min(this.getMatrixOfCoefficients(argbValues2, i, j, "RED", maskSharpen), 255);
+                int newB = Math.min(this.getMatrixOfCoefficients(argbValues2, i, j, "BLUE", maskSharpen), 255);
+                int newG = Math.min(this.getMatrixOfCoefficients(argbValues2, i, j, "GREEN", maskSharpen), 255);
 
-                argbValues2[i][j] = Color.argb(newA, newR, newG, newB);
-                bitmap2.setPixel(i, j, argbValues2[i][j]);
+                tempArgbValues[i][j] = Color.argb(newA, newR, newG, newB);
+                bitmap2.setPixel(i, j, tempArgbValues[i][j]);
             }
         }
-
+        argbValues2 = tempArgbValues;
         imageView2.setImageBitmap(bitmap2);
     }
 

@@ -57,8 +57,8 @@
     <LinearLayout
         android:id="@+id/Table"
         android:layout_width="388dp"
-        android:layout_height="232dp"
-        android:layout_marginBottom="2dp"
+        android:layout_height="261dp"
+        android:layout_marginBottom="8dp"
         android:orientation="horizontal"
         app:layout_constraintBottom_toTopOf="@+id/set_reset"
         app:layout_constraintEnd_toEndOf="parent"
