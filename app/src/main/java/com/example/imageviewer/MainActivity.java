@@ -8,7 +8,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
@@ -18,6 +17,9 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 public class MainActivity extends AppCompatActivity {
+    private double[][] maskBlur = {{0, 0.2, 0}, {0.2, 0, 0.2}, {0, 0.2, 0}};
+    private double[][] maskSharpen = {{0, -1, 0}, {-1, 5, -1}, {0, -1, 0}};
+
     private LinearLayout actionsLayout;
 
     private ImageView imageView1;
@@ -28,6 +30,10 @@ public class MainActivity extends AppCompatActivity {
     private int[][] argbValues2;
     private Bitmap bitmap2;
 
+    private ImageView imageView3;
+    private int[][] argbValues3;
+    private Bitmap bitmap3;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
 
         imageView1 = findViewById(R.id.startImage);
         imageView2 = findViewById(R.id.changedImage);
+        imageView3 = findViewById(R.id.changedImage2);
         actionsLayout = findViewById(R.id.actionsLayout);
     }
 
@@ -56,6 +63,11 @@ public class MainActivity extends AppCompatActivity {
             imageView2.setImageBitmap(bitmap1);
             bitmap2 = ((BitmapDrawable) imageView1.getDrawable()).getBitmap().copy(Bitmap.Config.ARGB_8888, true);
             argbValues2 = getRgbValuesFromBitmap(bitmap1);
+
+            imageView3.setImageBitmap(bitmap1);
+            bitmap3 = ((BitmapDrawable) imageView1.getDrawable()).getBitmap().copy(Bitmap.Config.ARGB_8888, true);
+            argbValues3 = getRgbValuesFromBitmap(bitmap1);
+
 
             for (int i = 0; i < actionsLayout.getChildCount(); i++) {
                 actionsLayout.getChildAt(i).setEnabled(true);
@@ -131,26 +143,70 @@ public class MainActivity extends AppCompatActivity {
         imageView2.setImageBitmap(bitmap2);
     }
 
-    private int getMiddleOfNeighbourPixels(@ColorInt int[][] argbValues, int x, int y, String channel) {
+    private int getMatrixOfCoefficients(@ColorInt int[][] argbValues, int x, int y, String channel, double[][] coefficients) {
+        int result;
+        int summ = 0;
+
+
         switch (channel) {
             case "RED":
-                return Math.round((Color.red(argbValues[x][y]) + Color.red(argbValues[x + 1][y]) + Color.red(argbValues[x - 1][y]) + Color.red(argbValues[x][y + 1]) + Color.red(argbValues[x][y - 1])) / 5);
+                for (int i = -1; i <= 1; i++) {
+                    for (int j = -1; j <= 1; j++) {
+                        summ += 0.12211* Color.red(argbValues[x + i][y + j]);
+                    }
+                }
+                summ = Math.round(summ);
+                result = summ;
+                break;
             case "GREEN":
-                return Math.round((Color.green(argbValues[x][y]) + Color.green(argbValues[x + 1][y]) + Color.green(argbValues[x - 1][y]) + Color.green(argbValues[x][y + 1]) + Color.green(argbValues[x][y - 1])) / 5);
+                for (int i = -1; i <= 1; i++) {
+                    for (int j = -1; j <= 1; j++) {
+                        summ += 0.12211* Color.green(argbValues[x + i][y + j]);
+                    }
+                }
+                summ = Math.round(summ);
+                result = summ;
+                break;
             case "BLUE":
-                return Math.round((Color.blue(argbValues[x][y]) + Color.blue(argbValues[x + 1][y]) + Color.blue(argbValues[x - 1][y]) + Color.blue(argbValues[x][y + 1]) + Color.blue(argbValues[x][y - 1])) / 5);
+                for (int i = -1; i <= 1; i++) {
+                    for (int j = -1; j <= 1; j++) {
+                        summ += 0.122111 * Color.blue(argbValues[x + i][y + j]);
+                    }
+                }
+                summ = Math.round(summ);
+                result = summ;
+                break;
             default:
-                return Color.BLUE;
+                result = Color.BLUE;
+                break;
         }
+
+        return result;
     }
 
     public void makeBlurred(View view) {
         for (int i = 1; i < bitmap2.getWidth() - 1; i++) {
             for (int j = 1; j < bitmap2.getHeight() - 1; j++) {
                 int newA = Color.alpha(argbValues2[i][j]);
-                int newR = Color.red(this.getMiddleOfNeighbourPixels(argbValues2, i, j, "RED"));
-                int newG = Color.green(this.getMiddleOfNeighbourPixels(argbValues2, i, j, "GREEN"));
-                int newB = Color.blue(this.getMiddleOfNeighbourPixels(argbValues2, i, j, "BLUE"));
+                int newR = Math.min(this.getMatrixOfCoefficients(argbValues2, i, j, "RED", maskBlur), 255);
+                int newB = Math.min(this.getMatrixOfCoefficients(argbValues2, i, j, "BLUE", maskBlur), 255);
+                int newG = Math.min(this.getMatrixOfCoefficients(argbValues2, i, j, "GREEN", maskBlur), 255);
+
+                argbValues2[i][j] = Color.argb(newA, newR, newG, newB);
+                bitmap2.setPixel(i, j, argbValues2[i][j]);
+            }
+        }
+
+        imageView2.setImageBitmap(bitmap2);
+    }
+
+    public void makeSharpen(View view) {
+        for (int i = 1; i < bitmap2.getWidth() - 1; i++) {
+            for (int j = 1; j < bitmap2.getHeight() - 1; j++) {
+                int newA = Color.alpha(argbValues2[i][j]);
+                int newR = Math.min(this.getMatrixOfCoefficients(argbValues2, i, j, "RED", maskBlur), 255);
+                int newB = Math.min(this.getMatrixOfCoefficients(argbValues2, i, j, "BLUE", maskBlur), 255);
+                int newG = Math.min(this.getMatrixOfCoefficients(argbValues2, i, j, "GREEN", maskBlur), 255);
 
                 argbValues2[i][j] = Color.argb(newA, newR, newG, newB);
                 bitmap2.setPixel(i, j, argbValues2[i][j]);
@@ -168,11 +224,11 @@ public class MainActivity extends AppCompatActivity {
                 int newG = Color.green(argbValues2[i][j] - argbValues1[i][j]);
                 int newB = Color.blue(argbValues2[i][j] - argbValues1[i][j]);
 
-                argbValues2[i][j] = Color.argb(newA, newR, newG, newB);
-                bitmap2.setPixel(i, j, argbValues2[i][j]);
+                argbValues3[i][j] = Color.argb(newA, newR, newG, newB);
+                bitmap3.setPixel(i, j, argbValues2[i][j]);
             }
         }
 
-        imageView2.setImageBitmap(bitmap2);
+        imageView3.setImageBitmap(bitmap2);
     }
 }
