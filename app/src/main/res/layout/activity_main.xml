@@ -42,6 +42,18 @@
         app:layout_constraintVertical_bias="0.028"
         tools:srcCompat="@tools:sample/backgrounds/scenic" />
 
+    <ImageView
+        android:id="@+id/changedImage2"
+        android:layout_width="384px"
+        android:layout_height="384px"
+        app:layout_constraintBottom_toTopOf="@+id/set_reset"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.358"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.398"
+        tools:srcCompat="@tools:sample/backgrounds/scenic" />
+
     <LinearLayout
         android:id="@+id/Table"
         android:layout_width="388dp"
@@ -95,12 +107,21 @@
                     android:text="Blur" />
 
                 <Button
+                    android:id="@+id/sharpnessBtn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:enabled="false"
+                    android:onClick="makeSharpen"
+                    android:text="Sharpen" />
+
+                <Button
                     android:id="@+id/differenceBtn"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:enabled="false"
                     android:onClick="makeDifference"
                     android:text="Difference" />
+
             </LinearLayout>
         </ScrollView>
 
