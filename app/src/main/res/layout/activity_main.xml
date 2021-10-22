@@ -122,6 +122,22 @@
                     android:onClick="makeDifference"
                     android:text="Difference" />
 
+                <Button
+                    android:id="@+id/autoContrastBtn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:enabled="false"
+                    android:onClick="makeAutoContrast"
+                    android:text="Auto Contrast" />
+
+                <Button
+                    android:id="@+id/autoContrastBtn2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:enabled="false"
+                    android:onClick="useGaussFilter"
+                    android:text="Gauss Filter" />
+
             </LinearLayout>
         </ScrollView>
 
