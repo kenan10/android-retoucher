@@ -138,6 +138,14 @@
                     android:onClick="useGaussFilter"
                     android:text="Gauss Filter" />
 
+                <Button
+                    android:id="@+id/autoContrastBtn3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:enabled="false"
+                    android:onClick="adaptiveGauss"
+                    android:text="Adaptive Gauss" />
+
             </LinearLayout>
         </ScrollView>
 

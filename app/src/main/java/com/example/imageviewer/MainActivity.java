@@ -1,14 +1,9 @@
 package com.example.imageviewer;
 
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultRegistry;
-import androidx.activity.result.contract.ActivityResultContract;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityOptionsCompat;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -34,12 +29,20 @@ public class MainActivity extends AppCompatActivity {
             {-1, 9, -1},
             {-1, -1, -1}
     };
-    private final double[][] gaussRestoreMask = {
+    private final double[][] gaussRestoreMask3x3 = {
             {0.125, 0.125, 0.125},
             {0.125, 0, 0.125},
             {0.125, 0.125, 0.125}
     };
+    private final double[][] gaussRestoreMask5x5 = {
+            {0.0417, 0.0417, 0.0417, 0.0417, 0.0417},
+            {0.0417, 0.0417, 0.0417, 0.0417, 0.0417},
+               {0.0417, 0.0417, 0, 0.0417, 0.0417},
+            {0.0417, 0.0417, 0.0417, 0.0417, 0.0417},
+            {0.0417, 0.0417, 0.0417, 0.0417, 0.0417},
+    };
 
+    int LIMIT = 220;
 
     private LinearLayout actionsLayout;
 
@@ -163,33 +166,34 @@ public class MainActivity extends AppCompatActivity {
         imageView2.setImageBitmap(bitmap2);
     }
 
-    private int applyMask(@ColorInt int[][] argbValues, int x, int y, String channel, double[][] coefficients) {
+    private int applyMask(@ColorInt int[][] argbValues, int x, int y, String channel, double[][] coefficients, int size) {
         int result;
         int summa = 0;
+        int lastIndex = Math.round(size / 2);
 
         switch (channel) {
             case "RED":
-                for (int i = -1; i <= 1; i++) {
-                    for (int j = -1; j <= 1; j++) {
-                        summa += coefficients[i + 1][j + 1] * Color.red(argbValues[x + i][y + j]);
+                for (int i = -lastIndex; i <= lastIndex; i++) {
+                    for (int j = -lastIndex; j <= lastIndex; j++) {
+                        summa += coefficients[i + lastIndex][j + lastIndex] * Color.red(argbValues[x + i][y + j]);
                     }
                 }
                 summa = Math.round(summa);
                 result = summa;
                 break;
             case "GREEN":
-                for (int i = -1; i <= 1; i++) {
-                    for (int j = -1; j <= 1; j++) {
-                        summa +=coefficients[i + 1][j + 1] * Color.green(argbValues[x + i][y + j]);
+                for (int i = -lastIndex; i <= lastIndex; i++) {
+                    for (int j = -lastIndex; j <= lastIndex; j++) {
+                        summa +=coefficients[i + lastIndex][j + lastIndex] * Color.green(argbValues[x + i][y + j]);
                     }
                 }
                 summa = Math.round(summa);
                 result = summa;
                 break;
             case "BLUE":
-                for (int i = -1; i <= 1; i++) {
-                    for (int j = -1; j <= 1; j++) {
-                        summa += coefficients[i + 1][j + 1] * Color.blue(argbValues[x + i][y + j]);
+                for (int i = -lastIndex; i <= lastIndex; i++) {
+                    for (int j = -lastIndex; j <= lastIndex; j++) {
+                        summa += coefficients[i + lastIndex][j + lastIndex] * Color.blue(argbValues[x + i][y + j]);
                     }
                 }
                 summa = Math.round(summa);
@@ -203,16 +207,42 @@ public class MainActivity extends AppCompatActivity {
         return result;
     }
 
+    private double[][] getAdaptionMask(@ColorInt int[][] argbValues, int x, int y, int size) {
+        int lastIndex = Math.round(size / 2);
+        float amountOfNotEmptyPixels = 0;
+        double[][] mask = new double[size][size];
+
+        for (int i = -lastIndex; i <= lastIndex; i++) {
+            for (int j = -lastIndex; j <= lastIndex; j++) {
+                if (Color.red(argbValues[x + i][y + j]) <= LIMIT) {
+                    amountOfNotEmptyPixels++;
+                }
+            }
+        }
+        float coeff = 1/(amountOfNotEmptyPixels) ;
+
+        for (int i = -lastIndex; i <= lastIndex; i++) {
+            for (int j = -lastIndex; j <= lastIndex; j++) {
+                if (Color.red(argbValues[x + i][y + j]) <= LIMIT) {
+                    mask[i + lastIndex][j + lastIndex] = coeff;
+                } else {
+                    mask[i + lastIndex][j + lastIndex] = 0;
+                }
+            }
+        }
+        return mask;
+    }
+
     public void makeBlurred(View view) {
         int[][] tempArgbValues = new int[bitmap2.getWidth()][bitmap2.getHeight()];
         for (int i = 1; i < bitmap2.getWidth() - 1; i++) {
             for (int j = 1; j < bitmap2.getHeight() - 1; j++) {
                 int newA = Color.alpha(argbValues2[i][j]);
-                int newR = Math.min(this.applyMask(argbValues2, i, j, "RED", maskBlur), 255);
+                int newR = Math.min(this.applyMask(argbValues2, i, j, "RED", maskBlur, 3), 255);
                 newR = Math.max(newR, 0);
-                int newB = Math.min(this.applyMask(argbValues2, i, j, "BLUE", maskBlur), 255);
+                int newB = Math.min(this.applyMask(argbValues2, i, j, "BLUE", maskBlur, 3), 255);
                 newB = Math.max(newB, 0);
-                int newG = Math.min(this.applyMask(argbValues2, i, j, "GREEN", maskBlur), 255);
+                int newG = Math.min(this.applyMask(argbValues2, i, j, "GREEN", maskBlur, 3), 255);
                 newG = Math.max(newG, 0);
 
 
@@ -229,11 +259,11 @@ public class MainActivity extends AppCompatActivity {
         for (int i = 1; i < bitmap2.getWidth() - 1; i++) {
             for (int j = 1; j < bitmap2.getHeight() - 1; j++) {
                 int newA = Color.alpha(argbValues2[i][j]);
-                int newR = Math.min(this.applyMask(argbValues2, i, j, "RED", maskSharpen), 255);
+                int newR = Math.min(this.applyMask(argbValues2, i, j, "RED", maskSharpen, 3), 255);
                 newR = Math.max(newR, 0);
-                int newB = Math.min(this.applyMask(argbValues2, i, j, "BLUE", maskSharpen), 255);
+                int newB = Math.min(this.applyMask(argbValues2, i, j, "BLUE", maskSharpen, 3), 255);
                 newB = Math.max(newB, 0);
-                int newG = Math.min(this.applyMask(argbValues2, i, j, "GREEN", maskSharpen), 255);
+                int newG = Math.min(this.applyMask(argbValues2, i, j, "GREEN", maskSharpen, 3), 255);
                 newG = Math.max(newG, 0);
 
                 tempArgbValues[i][j] = Color.argb(newA, newR, newG, newB);
@@ -272,6 +302,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void makeAutoContrast(View view) {
+        autoContrast();
+        imageView2.setImageBitmap(bitmap2);
+    }
+
+    private void autoContrast() {
         int[][] tempArgbValues = new int[bitmap2.getWidth()][bitmap2.getHeight()];
         int[] sortedArgbValues2 = sortFromLToH(argbValues2);
         int min = sortedArgbValues2[0];
@@ -288,20 +323,20 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         argbValues2 = tempArgbValues;
-        imageView2.setImageBitmap(bitmap2);
     }
 
     public void useGaussFilter(View view) {
+        autoContrast();
         int[][] tempArgbValues = new int[bitmap2.getWidth()][bitmap2.getHeight()];
-        for (int i = 1; i < bitmap2.getWidth() - 1; i++) {
-            for (int j = 1; j < bitmap2.getHeight() - 1; j++) {
+        for (int i = 2; i < bitmap2.getWidth() - 2; i++) {
+            for (int j = 2; j < bitmap2.getHeight() - 2; j++) {
                 if (Color.red(argbValues2[i][j]) >= 230) {
                     int newA = Color.alpha(argbValues2[i][j]);
-                    int newR = Math.min(this.applyMask(argbValues2, i, j, "RED", gaussRestoreMask), 255);
+                    int newR = Math.min(this.applyMask(argbValues2, i, j, "RED", gaussRestoreMask5x5, 5), 255);
                     newR = Math.max(newR, 0);
-                    int newB = Math.min(this.applyMask(argbValues2, i, j, "BLUE", gaussRestoreMask), 255);
+                    int newB = Math.min(this.applyMask(argbValues2, i, j, "BLUE", gaussRestoreMask5x5, 5), 255);
                     newB = Math.max(newB, 0);
-                    int newG = Math.min(this.applyMask(argbValues2, i, j, "GREEN", gaussRestoreMask), 255);
+                    int newG = Math.min(this.applyMask(argbValues2, i, j, "GREEN", gaussRestoreMask5x5, 5), 255);
                     newG = Math.max(newG, 0);
 
                     tempArgbValues[i][j] = Color.argb(newA, newR, newG, newB);
@@ -313,6 +348,31 @@ public class MainActivity extends AppCompatActivity {
                     tempArgbValues[i][j] = Color.argb(newA, newR, newR, newR);
                     bitmap2.setPixel(i, j, tempArgbValues[i][j]);
                 }
+            }
+        }
+        argbValues2 = tempArgbValues;
+        imageView2.setImageBitmap(bitmap2);
+    }
+
+    public void adaptiveGauss(View view) {
+        autoContrast();
+        int[][] tempArgbValues = new int[bitmap2.getWidth()][bitmap2.getHeight()];
+        for (int i = 2; i < bitmap2.getWidth() - 2; i++) {
+            for (int j = 2; j < bitmap2.getHeight() - 2; j++) {
+                if (Color.red(argbValues2[i][j]) >= 230) {
+                    double[][] mask = getAdaptionMask(argbValues2, i, j, 5);
+                    int newA = Color.alpha(argbValues2[i][j]);
+                    int newR = Math.min(this.applyMask(argbValues2, i, j, "RED", mask, 5), 255);
+                    newR = Math.max(newR, 0);
+
+                    tempArgbValues[i][j] = Color.argb(newA, newR, newR, newR);
+                } else {
+                    int newA = Color.alpha(argbValues2[i][j]);
+                    int newR = Color.red(argbValues2[i][j]);
+
+                    tempArgbValues[i][j] = Color.argb(newA, newR, newR, newR);
+                }
+                bitmap2.setPixel(i, j, tempArgbValues[i][j]);
             }
         }
         argbValues2 = tempArgbValues;
