@@ -1,9 +1,14 @@
 package com.example.imageviewer;
 
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultRegistry;
+import androidx.activity.result.contract.ActivityResultContract;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityOptionsCompat;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -117,7 +122,6 @@ public class MainActivity extends AppCompatActivity {
                 int newG = Math.min(((int) Math.round(Color.green(argbValues2[i][j]) * 1.1)), 255);
                 int newB = Math.min(((int) Math.round(Color.blue(argbValues2[i][j]) * 1.1)), 255);
 
-
                 argbValues2[i][j] = Color.argb(newA, newR, newG, newB);
                 bitmap2.setPixel(i, j, argbValues2[i][j]);
             }
@@ -159,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
         imageView2.setImageBitmap(bitmap2);
     }
 
-    private int getMatrixOfCoefficients(@ColorInt int[][] argbValues, int x, int y, String channel, double[][] coefficients) {
+    private int applyMask(@ColorInt int[][] argbValues, int x, int y, String channel, double[][] coefficients) {
         int result;
         int summa = 0;
 
@@ -204,16 +208,16 @@ public class MainActivity extends AppCompatActivity {
         for (int i = 1; i < bitmap2.getWidth() - 1; i++) {
             for (int j = 1; j < bitmap2.getHeight() - 1; j++) {
                 int newA = Color.alpha(argbValues2[i][j]);
-                int newR = Math.min(this.getMatrixOfCoefficients(argbValues2, i, j, "RED", maskBlur), 255);
+                int newR = Math.min(this.applyMask(argbValues2, i, j, "RED", maskBlur), 255);
                 newR = Math.max(newR, 0);
-                int newB = Math.min(this.getMatrixOfCoefficients(argbValues2, i, j, "BLUE", maskBlur), 255);
+                int newB = Math.min(this.applyMask(argbValues2, i, j, "BLUE", maskBlur), 255);
                 newB = Math.max(newB, 0);
-                int newG = Math.min(this.getMatrixOfCoefficients(argbValues2, i, j, "GREEN", maskBlur), 255);
+                int newG = Math.min(this.applyMask(argbValues2, i, j, "GREEN", maskBlur), 255);
                 newG = Math.max(newG, 0);
 
 
                 tempArgbValues[i][j] = Color.argb(newA, newR, newG, newB);
-                bitmap2.setPixel(i, j, argbValues2[i][j]);
+                bitmap2.setPixel(i, j, tempArgbValues[i][j]);
             }
         }
         argbValues2 = tempArgbValues;
@@ -225,11 +229,11 @@ public class MainActivity extends AppCompatActivity {
         for (int i = 1; i < bitmap2.getWidth() - 1; i++) {
             for (int j = 1; j < bitmap2.getHeight() - 1; j++) {
                 int newA = Color.alpha(argbValues2[i][j]);
-                int newR = Math.min(this.getMatrixOfCoefficients(argbValues2, i, j, "RED", maskSharpen), 255);
+                int newR = Math.min(this.applyMask(argbValues2, i, j, "RED", maskSharpen), 255);
                 newR = Math.max(newR, 0);
-                int newB = Math.min(this.getMatrixOfCoefficients(argbValues2, i, j, "BLUE", maskSharpen), 255);
+                int newB = Math.min(this.applyMask(argbValues2, i, j, "BLUE", maskSharpen), 255);
                 newB = Math.max(newB, 0);
-                int newG = Math.min(this.getMatrixOfCoefficients(argbValues2, i, j, "GREEN", maskSharpen), 255);
+                int newG = Math.min(this.applyMask(argbValues2, i, j, "GREEN", maskSharpen), 255);
                 newG = Math.max(newG, 0);
 
                 tempArgbValues[i][j] = Color.argb(newA, newR, newG, newB);
@@ -252,7 +256,7 @@ public class MainActivity extends AppCompatActivity {
                 bitmap3.setPixel(i, j, argbValues2[i][j]);
             }
         }
-        imageView3.setImageBitmap(bitmap2);
+        imageView3.setImageBitmap(bitmap3);
     }
 
     private int[] sortFromLToH(int[][] arr) {
@@ -260,7 +264,7 @@ public class MainActivity extends AppCompatActivity {
 
         for (int i = 0; i < arr.length; i++) {
             for (int j = 0; j < arr[0].length; j++) {
-                newArr[(i * arr.length) + j] = arr[i][j];
+                newArr[(i * arr.length) + j] = Color.red(arr[i][j]);
             }
         }
         Arrays.sort(newArr);
@@ -269,19 +273,20 @@ public class MainActivity extends AppCompatActivity {
 
     public void makeAutoContrast(View view) {
         int[][] tempArgbValues = new int[bitmap2.getWidth()][bitmap2.getHeight()];
-        int min = Color.red(sortFromLToH(argbValues2)[0]);
-        int max = Color.red(sortFromLToH(argbValues2)[argbValues2.length * argbValues2[0].length - 1]);
+        int[] sortedArgbValues2 = sortFromLToH(argbValues2);
+        int min = sortedArgbValues2[0];
+        int max = sortedArgbValues2[sortedArgbValues2.length - 1];
 
         for (int i = 0; i < bitmap2.getWidth(); i++) {
             for (int j = 0; j < bitmap2.getHeight(); j++) {
                 int newA = Color.alpha(argbValues2[i][j]);
-                int newR = Math.round((Color.red(argbValues2[i][j])-min) * 255 / (max-min));
+                int newR = Math.min((Color.red(argbValues2[i][j])-min) * 255 / (max-min), 255);
+                newR = Math.max(newR, 0);
 
                 tempArgbValues[i][j] = Color.argb(newA, newR, newR, newR);
                 bitmap2.setPixel(i, j, tempArgbValues[i][j]);
             }
         }
-
         argbValues2 = tempArgbValues;
         imageView2.setImageBitmap(bitmap2);
     }
@@ -290,18 +295,23 @@ public class MainActivity extends AppCompatActivity {
         int[][] tempArgbValues = new int[bitmap2.getWidth()][bitmap2.getHeight()];
         for (int i = 1; i < bitmap2.getWidth() - 1; i++) {
             for (int j = 1; j < bitmap2.getHeight() - 1; j++) {
-                if (Color.red(argbValues2[i][j]) >= 150) {
+                if (Color.red(argbValues2[i][j]) >= 230) {
                     int newA = Color.alpha(argbValues2[i][j]);
-                    int newR = Math.min(this.getMatrixOfCoefficients(argbValues2, i, j, "RED", gaussRestoreMask), 255);
+                    int newR = Math.min(this.applyMask(argbValues2, i, j, "RED", gaussRestoreMask), 255);
                     newR = Math.max(newR, 0);
-                    int newB = Math.min(this.getMatrixOfCoefficients(argbValues2, i, j, "BLUE", gaussRestoreMask), 255);
+                    int newB = Math.min(this.applyMask(argbValues2, i, j, "BLUE", gaussRestoreMask), 255);
                     newB = Math.max(newB, 0);
-                    int newG = Math.min(this.getMatrixOfCoefficients(argbValues2, i, j, "GREEN", gaussRestoreMask), 255);
+                    int newG = Math.min(this.applyMask(argbValues2, i, j, "GREEN", gaussRestoreMask), 255);
                     newG = Math.max(newG, 0);
 
-
                     tempArgbValues[i][j] = Color.argb(newA, newR, newG, newB);
-                    bitmap2.setPixel(i, j, argbValues2[i][j]);
+                    bitmap2.setPixel(i, j, tempArgbValues[i][j]);
+                } else {
+                    int newA = Color.alpha(argbValues2[i][j]);
+                    int newR = Color.red(argbValues2[i][j]);
+
+                    tempArgbValues[i][j] = Color.argb(newA, newR, newR, newR);
+                    bitmap2.setPixel(i, j, tempArgbValues[i][j]);
                 }
             }
         }
