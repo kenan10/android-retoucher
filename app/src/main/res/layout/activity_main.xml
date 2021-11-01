@@ -146,6 +146,14 @@
                     android:onClick="adaptiveGauss"
                     android:text="Adaptive Gauss" />
 
+                <Button
+                    android:id="@+id/autoContrastBtn4"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:enabled="false"
+                    android:onClick="useMedianFilter"
+                    android:text="Median Filter" />
+
             </LinearLayout>
         </ScrollView>
 

@@ -219,7 +219,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
-        float coeff = 1/(amountOfNotEmptyPixels) ;
+        double coeff = 1 / ((amountOfNotEmptyPixels) + 0.5);
 
         for (int i = -lastIndex; i <= lastIndex; i++) {
             for (int j = -lastIndex; j <= lastIndex; j++) {
@@ -356,15 +356,54 @@ public class MainActivity extends AppCompatActivity {
 
     public void adaptiveGauss(View view) {
         autoContrast();
+        int size = 13;
+        int offset = size / 2;
         int[][] tempArgbValues = new int[bitmap2.getWidth()][bitmap2.getHeight()];
-        for (int i = 2; i < bitmap2.getWidth() - 2; i++) {
-            for (int j = 2; j < bitmap2.getHeight() - 2; j++) {
+        for (int i = offset; i < bitmap2.getWidth() - offset; i++) {
+            for (int j = offset; j < bitmap2.getHeight() - offset; j++) {
                 if (Color.red(argbValues2[i][j]) >= 230) {
-                    double[][] mask = getAdaptionMask(argbValues2, i, j, 5);
+                    double[][] mask = getAdaptionMask(argbValues2, i, j, size);
                     int newA = Color.alpha(argbValues2[i][j]);
-                    int newR = Math.min(this.applyMask(argbValues2, i, j, "RED", mask, 5), 255);
+                    int newR = Math.min(this.applyMask(argbValues2, i, j, "RED", mask, size), 255);
                     newR = Math.max(newR, 0);
 
+                    tempArgbValues[i][j] = Color.argb(newA, newR, newR, newR);
+                } else {
+                    int newA = Color.alpha(argbValues2[i][j]);
+                    int newR = Color.red(argbValues2[i][j]);
+
+                    tempArgbValues[i][j] = Color.argb(newA, newR, newR, newR);
+                }
+                bitmap2.setPixel(i, j, tempArgbValues[i][j]);
+            }
+        }
+        argbValues2 = tempArgbValues;
+        imageView2.setImageBitmap(bitmap2);
+    }
+
+    private int[][] getNeighbourPixels(int size, int x, int y, int[][] argbValues) {
+        int[][] neighbourPixels = new int[size][size];
+        int lastIndex = size / 2;
+        for (int i = -lastIndex; i <= lastIndex; i++) {
+            for (int j = -lastIndex; j <= lastIndex; j++) {
+                neighbourPixels[i + lastIndex][j + lastIndex] = argbValues[x + i][y + j];
+            }
+        }
+        return neighbourPixels;
+    }
+
+    public void useMedianFilter(View view) {
+        autoContrast();
+        int size = 13;
+        int offset = size / 2;
+        int[][] tempArgbValues = new int[bitmap2.getWidth()][bitmap2.getHeight()];
+        for (int i = offset; i < bitmap2.getWidth() - offset; i++) {
+            for (int j = offset; j < bitmap2.getHeight() - offset; j++) {
+                if (Color.red(argbValues2[i][j]) >= 230) {
+                    int newA = Color.alpha(argbValues2[i][j]);
+                    int[][] neighbourPixels = getNeighbourPixels(size, i, j, argbValues2);
+                    int[] sortedNeighbourPixels = sortFromLToH(neighbourPixels);
+                    int newR = sortedNeighbourPixels[sortedNeighbourPixels.length / 2];
                     tempArgbValues[i][j] = Color.argb(newA, newR, newR, newR);
                 } else {
                     int newA = Color.alpha(argbValues2[i][j]);
