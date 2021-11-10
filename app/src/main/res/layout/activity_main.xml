@@ -20,44 +20,34 @@
 
     <ImageView
         android:id="@+id/startImage"
-        android:layout_width="384px"
-        android:layout_height="384px"
+        android:layout_width="512px"
+        android:layout_height="512px"
+        android:layout_marginEnd="3dp"
         app:layout_constraintBottom_toTopOf="@+id/set_reset"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.074"
+        app:layout_constraintHorizontal_bias="0.019"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.029"
+        app:layout_constraintVertical_bias="0.315"
         tools:srcCompat="@tools:sample/backgrounds/scenic" />
 
     <ImageView
         android:id="@+id/changedImage"
-        android:layout_width="384px"
-        android:layout_height="384px"
+        android:layout_width="512px"
+        android:layout_height="512px"
+        android:layout_marginStart="3dp"
         app:layout_constraintBottom_toTopOf="@+id/set_reset"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.664"
+        app:layout_constraintHorizontal_bias="0.975"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.028"
-        tools:srcCompat="@tools:sample/backgrounds/scenic" />
-
-    <ImageView
-        android:id="@+id/changedImage2"
-        android:layout_width="384px"
-        android:layout_height="384px"
-        app:layout_constraintBottom_toTopOf="@+id/set_reset"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.358"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.398"
+        app:layout_constraintVertical_bias="0.315"
         tools:srcCompat="@tools:sample/backgrounds/scenic" />
 
     <LinearLayout
         android:id="@+id/Table"
-        android:layout_width="388dp"
-        android:layout_height="261dp"
+        android:layout_width="384dp"
+        android:layout_height="223dp"
         android:layout_marginBottom="8dp"
         android:orientation="horizontal"
         app:layout_constraintBottom_toTopOf="@+id/set_reset"
@@ -115,20 +105,20 @@
                     android:text="Sharpen" />
 
                 <Button
-                    android:id="@+id/differenceBtn"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:enabled="false"
-                    android:onClick="makeDifference"
-                    android:text="Difference" />
-
-                <Button
                     android:id="@+id/autoContrastBtn"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:enabled="false"
                     android:onClick="makeAutoContrast"
                     android:text="Auto Contrast" />
+
+                <Button
+                    android:id="@+id/autoContrastBtn5"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:enabled="false"
+                    android:onClick="useOverBrighter"
+                    android:text="Over Brightter " />
 
                 <Button
                     android:id="@+id/autoContrastBtn2"
@@ -143,7 +133,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:enabled="false"
-                    android:onClick="adaptiveGauss"
+                    android:onClick="useAdaptiveGauss"
                     android:text="Adaptive Gauss" />
 
                 <Button

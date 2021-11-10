@@ -3,6 +3,9 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/MAN/android_app/Android-Image-Editor/app/src/main/res/drawable/ic_launcher_background.xml" value="0.3828125" />
+        <entry key="..\:/MAN/android_app/Android-Image-Editor/app/src/main/res/layout/activity_main.xml" value="0.36666666666666664" />
+        <entry key="..\:/MAN/android_app/Android-Image-Editor/app/src/main/res/layout/layout_adaptive_gauss_dialog.xml" value="0.36666666666666664" />
         <entry key="..\:/MAN/android_app/image_test/app/src/main/res/layout/activity_main.xml" value="0.36666666666666664" />
         <entry key="..\:/man/image_editor/android_studio/app/src/main/res/layout/activity_main.xml" value="0.20416666666666666" />
       </map>
