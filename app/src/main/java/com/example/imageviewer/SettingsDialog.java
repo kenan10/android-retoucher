@@ -14,7 +14,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatDialogFragment;
 
 public class SettingsDialog extends AppCompatDialogFragment {
-    private EditText editTextOverBrighterThreshold;
     private EditText editTextAdaptiveGaussThreshold;
     private SettingsDialogListener listener;
 
@@ -39,13 +38,11 @@ public class SettingsDialog extends AppCompatDialogFragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 String adaptiveGaussThreshold = editTextAdaptiveGaussThreshold.getText().toString();
-                String overBrighterThreshold = editTextOverBrighterThreshold.getText().toString();
-                listener.adaptiveGauss(adaptiveGaussThreshold, overBrighterThreshold);
+                listener.adaptiveGauss(adaptiveGaussThreshold);
             }
         });
 
         editTextAdaptiveGaussThreshold = view.findViewById(R.id.filter);
-        editTextOverBrighterThreshold = view.findViewById(R.id.overBrighter);
 
         return builder.create();
     }
@@ -62,6 +59,6 @@ public class SettingsDialog extends AppCompatDialogFragment {
     }
 
     public interface SettingsDialogListener {
-        void adaptiveGauss(String adaptiveGaussThreshold, String overBrighterThreshold);
+        void adaptiveGauss(String adaptiveGaussThreshold);
     }
 }

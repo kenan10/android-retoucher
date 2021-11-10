@@ -16,12 +16,13 @@
             android:ems="10"
             android:hint="Filter threshold"
             android:inputType="number" />
+
         <EditText
-            android:id="@+id/overBrighter"
+            android:id="@+id/editTextNumber"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ems="10"
-            android:hint="Over brighter threshold"
+            android:hint="OverBrighter Threshold"
             android:inputType="number" />
     </LinearLayout>
 </RelativeLayout>

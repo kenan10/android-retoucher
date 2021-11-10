@@ -117,8 +117,16 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:enabled="false"
+                    android:onClick="useOverBrighterWithThreshold"
+                    android:text="Over Brightter with threshold " />
+
+                <Button
+                    android:id="@+id/autoContrastBtn7"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:enabled="false"
                     android:onClick="useOverBrighter"
-                    android:text="Over Brightter " />
+                    android:text="Over Brightter" />
 
                 <Button
                     android:id="@+id/autoContrastBtn2"
@@ -153,5 +161,16 @@
             android:layout_weight="1" />
 
     </LinearLayout>
+
+    <EditText
+        android:id="@+id/editTextNumber2"
+        android:layout_width="342dp"
+        android:layout_height="41dp"
+        android:layout_marginTop="16dp"
+        android:ems="10"
+        android:hint="OverBrighter Threshold"
+        android:inputType="number"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_editor_absoluteX="26dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

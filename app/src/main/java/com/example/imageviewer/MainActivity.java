@@ -18,9 +18,12 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
+
+import com.google.android.material.textfield.TextInputEditText;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -80,6 +83,7 @@ public class MainActivity extends AppCompatActivity implements SettingsDialog.Se
 //    private int[][] argbValues3;
 //    private Bitmap bitmap3;
 
+    private EditText overBrighterThresholdInput;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,6 +94,8 @@ public class MainActivity extends AppCompatActivity implements SettingsDialog.Se
         imageView2 = findViewById(R.id.changedImage);
 //        imageView3 = findViewById(R.id.changedImage2);
         actionsLayout = findViewById(R.id.actionsLayout);
+
+        overBrighterThresholdInput = findViewById(R.id.editTextNumber2);
     }
 
     private void askPermission() {
@@ -287,26 +293,26 @@ public class MainActivity extends AppCompatActivity implements SettingsDialog.Se
         return result;
     }
 
-    private double[][] getAdaptionMask(@ColorInt int[][] argbValues, int x, int y, int size) {
+    private double[][] getAdaptionMask(@ColorInt int[][] argbValues, int x, int y, int size, int threshold) {
         int lastIndex = Math.round(size / 2);
         float amountOfNotEmptyPixels = 0;
         double[][] mask = new double[size][size];
 
         for (int i = -lastIndex; i <= lastIndex; i++) {
             for (int j = -lastIndex; j <= lastIndex; j++) {
-                if (Color.red(argbValues[x + i][y + j]) <= LIMIT) {
+                if (Color.red(argbValues[x + i][y + j]) <= threshold) {
                     amountOfNotEmptyPixels++;
                 }
             }
         }
-        if (amountOfNotEmptyPixels < 2) {
+        if (amountOfNotEmptyPixels < 40) {
             return null;
         }
         double coeff = 1 / ((amountOfNotEmptyPixels) - 0);
 
         for (int i = -lastIndex; i <= lastIndex; i++) {
             for (int j = -lastIndex; j <= lastIndex; j++) {
-                if (Color.red(argbValues[x + i][y + j]) <= LIMIT) {
+                if (Color.red(argbValues[x + i][y + j]) <= threshold) {
                     mask[i + lastIndex][j + lastIndex] = coeff;
                 } else {
                     mask[i + lastIndex][j + lastIndex] = 0;
@@ -440,12 +446,22 @@ public class MainActivity extends AppCompatActivity implements SettingsDialog.Se
     }
 
     public void useOverBrighter(View view) {
-        overBrighter(220);
+        overBrighter(0);
         imageView2.setImageBitmap(bitmap2);
     }
 
+    public void useOverBrighterWithThreshold(View view) {
+        String threshold = overBrighterThresholdInput.getText().toString();
+        if (!threshold.equals("")) {
+            overBrighter(Integer.parseInt(threshold));
+            imageView2.setImageBitmap(bitmap2);
+        } else {
+            Toast.makeText(this, "Please input threshold", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     public void overBrighter(int threshold) {
-        double coeff = 1.2;
+        double coeff = 1.1;
         for (int i = 0; i < bitmap2.getWidth(); i++) {
             for (int j = 0; j < bitmap2.getHeight(); j++) {
                 if (Color.red(argbValues2[i][j]) >= threshold) {
@@ -472,7 +488,7 @@ public class MainActivity extends AppCompatActivity implements SettingsDialog.Se
 
     public void useMedianFilter(View view) {
         autoContrast();
-        int size = 13;
+        int size = 9;
         int offset = size / 2;
         int[][] tempArgbValues = new int[bitmap2.getWidth()][bitmap2.getHeight()];
         for (int i = offset; i < bitmap2.getWidth() - offset; i++) {
@@ -502,16 +518,15 @@ public class MainActivity extends AppCompatActivity implements SettingsDialog.Se
     }
 
     @Override
-    public void adaptiveGauss(String adaptiveGaussThreshold, String overBrighterThreshold) {
+    public void adaptiveGauss(String adaptiveGaussThreshold) {
         autoContrast();
-        overBrighter(Integer.parseInt(overBrighterThreshold));
-        int size = 7;
+        int size = 9;
         int offset = size / 2;
         int[][] tempArgbValues = new int[bitmap2.getWidth()][bitmap2.getHeight()];
         for (int i = offset; i < bitmap2.getWidth() - offset; i++) {
             for (int j = offset; j < bitmap2.getHeight() - offset; j++) {
                 if (Color.red(argbValues2[i][j]) >= Integer.parseInt(adaptiveGaussThreshold)) {
-                    double[][] mask = getAdaptionMask(argbValues2, i, j, size);
+                    double[][] mask = getAdaptionMask(argbValues2, i, j, size, Integer.parseInt(adaptiveGaussThreshold));
                     int newA = Color.alpha(argbValues2[i][j]);
                     int newR;
                     if (mask != null) {
