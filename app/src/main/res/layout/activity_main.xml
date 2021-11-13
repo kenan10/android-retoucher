@@ -25,10 +25,10 @@
         android:layout_marginEnd="3dp"
         app:layout_constraintBottom_toTopOf="@+id/set_reset"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.019"
+        app:layout_constraintHorizontal_bias="0.051"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.315"
+        app:layout_constraintVertical_bias="0.466"
         tools:srcCompat="@tools:sample/backgrounds/scenic" />
 
     <ImageView
@@ -38,10 +38,10 @@
         android:layout_marginStart="3dp"
         app:layout_constraintBottom_toTopOf="@+id/set_reset"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.975"
+        app:layout_constraintHorizontal_bias="0.962"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.315"
+        app:layout_constraintVertical_bias="0.466"
         tools:srcCompat="@tools:sample/backgrounds/scenic" />
 
     <LinearLayout
@@ -113,22 +113,6 @@
                     android:text="Auto Contrast" />
 
                 <Button
-                    android:id="@+id/autoContrastBtn5"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:enabled="false"
-                    android:onClick="useOverBrighterWithThreshold"
-                    android:text="Over Brightter with threshold " />
-
-                <Button
-                    android:id="@+id/autoContrastBtn7"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:enabled="false"
-                    android:onClick="useOverBrighter"
-                    android:text="Over Brightter" />
-
-                <Button
                     android:id="@+id/autoContrastBtn2"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -164,13 +148,60 @@
 
     <EditText
         android:id="@+id/editTextNumber2"
-        android:layout_width="342dp"
+        android:layout_width="0dp"
         android:layout_height="41dp"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
         android:ems="10"
-        android:hint="OverBrighter Threshold"
+        android:hint="Threshold"
         android:inputType="number"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:layout_editor_absoluteX="26dp" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/editTextNumber3"
+        android:layout_width="0dp"
+        android:layout_height="41dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="8dp"
+        android:ems="10"
+        android:hint="Mask size"
+        android:inputType="number"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editTextNumber2" />
+
+    <EditText
+        android:id="@+id/editTextNumber4"
+        android:layout_width="0dp"
+        android:layout_height="41dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="8dp"
+        android:ems="10"
+        android:hint="Amount of not empty pixels"
+        android:inputType="number"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editTextNumber3" />
+
+    <Button
+        android:id="@+id/button"
+        android:layout_width="88dp"
+        android:layout_height="42dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        android:onClick="highlightVisibleCracks"
+        android:text="Show"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editTextNumber4" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
