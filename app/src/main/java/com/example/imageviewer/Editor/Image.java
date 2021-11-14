@@ -6,7 +6,6 @@ import android.graphics.Color;
 import androidx.annotation.NonNull;
 
 import java.util.Arrays;
-import java.util.Objects;
 
 public class Image {
     private Bitmap bitmap;
@@ -200,7 +199,39 @@ public class Image {
 
     public void adaptiveGauss(int threshold, int size, int amountOfNotEmptyPixelsThreshold) {
         int offset = size / 2;
-        int[][] tempArgbValues = new int[bitmap.getWidth()][bitmap.getHeight()];
+        int[][] tempArgbValues = argbValues.clone();
+
+        for (int i = offset * 2; i < bitmap.getWidth() - offset * 2; i++) {
+            for (int j = offset * 2; j < bitmap.getHeight() - offset * 2; j++) {
+
+                if (Color.red(argbValues[i][j]) >= threshold) {
+                    for (int k = -offset; k <= offset; k++) {
+                        for (int l = -offset; l <= offset; l++) {
+                            if (Color.red(argbValues[i + k][j + l]) <= threshold) {
+                                double[][] matrix = getAdaptionMask(i + k, j + l, size, threshold, amountOfNotEmptyPixelsThreshold);
+                                Mask mask;
+
+                                if (matrix != null) {
+                                    mask = new Mask(matrix);
+                                    int newA = Color.alpha(argbValues[i][j]);
+                                    float newR;
+                                    if (mask.getMatrix() != null) {
+                                        newR = Math.min(applyMaskForPixel(mask, i, j), 255);
+                                        newR = Math.max(newR, 0);
+                                    } else {
+                                        newR = Color.red(argbValues[i][j]);
+                                    }
+                                    int finalR = Math.round(newR);
+                                    tempArgbValues[i][j] = Color.argb(newA, finalR, finalR, finalR);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                bitmap.setPixel(i, j, tempArgbValues[i][j]);
+            }
+        }
 
         for (int i = offset; i < bitmap.getWidth() - offset; i++) {
             for (int j = offset; j < bitmap.getHeight() - offset; j++) {
@@ -220,24 +251,12 @@ public class Image {
                         }
                         int finalR = Math.round(newR);
                         tempArgbValues[i][j] = Color.argb(newA, finalR, finalR, finalR);
-                        int gg = Color.red(tempArgbValues[i][j]);
-                        int sjef = 0;
-                    } else {
-                        int newA = Color.alpha(argbValues[i][j]);
-                        int newR = Color.red(argbValues[i][j]);
-
-                        tempArgbValues[i][j] = Color.argb(newA, newR, newR, newR);
                     }
-                } else {
-                    int newA = Color.alpha(argbValues[i][j]);
-                    int newR = Color.red(argbValues[i][j]);
-
-                    tempArgbValues[i][j] = Color.argb(newA, newR, newR, newR);
                 }
                 bitmap.setPixel(i, j, tempArgbValues[i][j]);
             }
         }
-        argbValues = tempArgbValues;
+        argbValues = tempArgbValues.clone();
     }
 
     public void highlightVisibleCracks(int threshold) {

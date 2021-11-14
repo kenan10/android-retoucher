@@ -16,6 +16,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -87,6 +88,8 @@ public class MainActivity extends AppCompatActivity{
     private EditText maskSizeInput;
     private EditText amountOfNotEmptyInput;
 
+    private Button showCracksBtn;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -99,6 +102,8 @@ public class MainActivity extends AppCompatActivity{
         thresholdInput = findViewById(R.id.editTextNumber2);
         maskSizeInput = findViewById(R.id.editTextNumber3);
         amountOfNotEmptyInput = findViewById(R.id.editTextNumber4);
+
+        showCracksBtn = findViewById(R.id.button);
     }
 
     private void askPermission() {
@@ -170,6 +175,7 @@ public class MainActivity extends AppCompatActivity{
             for (int i = 0; i < actionsLayout.getChildCount(); i++) {
                 actionsLayout.getChildAt(i).setEnabled(true);
             }
+            showCracksBtn.setEnabled(true);
 
             imageView2.setOnClickListener(new View.OnClickListener() {
                 @Override
