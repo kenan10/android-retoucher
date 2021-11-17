@@ -2,13 +2,15 @@ package com.example.imageviewer.Editor;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 
+import java.lang.reflect.Array;
 import java.util.Arrays;
 
 public class Image {
-    private Bitmap bitmap;
+    private final Bitmap bitmap;
     int[][] argbValues;
 
     public Bitmap getBitmap() {
@@ -16,7 +18,7 @@ public class Image {
     }
 
     public Image (Bitmap bitmap) {
-        this.bitmap = bitmap;
+        this.bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
         this.argbValues = getRgbValuesFromBitmap(this.bitmap);
     }
 
@@ -25,6 +27,7 @@ public class Image {
         for (int i = 0; i < bitmap.getWidth(); i++) {
             for (int j = 0; j < bitmap.getHeight(); j++) {
                 int pixel = bitmap.getPixel(i, j);
+                int newPixel = (Color.red(pixel));
                 argbValues[i][j] = pixel;
             }
         }
@@ -92,7 +95,6 @@ public class Image {
 
         for (int i = -offset; i <= offset; i++) {
             for (int j = -offset; j <= offset; j++) {
-                int old = Color.red(argbValues[x + i][y + j]);
                 newR += matrix[i + offset][j + offset] * Color.red(argbValues[x + i][y + j]);
             }
         }
@@ -119,32 +121,65 @@ public class Image {
         argbValues = tempArgbValues;
     }
 
-    private double[][] getAdaptionMask(int x, int y, int size, int threshold, int amountOfNotEmptyPixelsThreshold) {
+    private Mask getAdaptionMask(int x, int y, int size, int threshold, int amountOfNotEmptyPixelsThreshold, boolean useDiagonalPixels) {
         int lastIndex = size / 2;
         float amountOfNotEmptyPixels = 0;
-        double[][] mask = new double[size][size];
+        double[][] matrix = new double[size][size];
+        Mask mask;
 
-        for (int i = -lastIndex; i <= lastIndex; i++) {
-            for (int j = -lastIndex; j <= lastIndex; j++) {
-                if (Color.red(argbValues[x + i][y + j]) <= threshold) {
-                    amountOfNotEmptyPixels++;
+
+        if (useDiagonalPixels) {
+            for (int i = -lastIndex; i <= lastIndex; i++) {
+                for (int j = -lastIndex; j <= lastIndex; j++) {
+
+                    if (Color.red(argbValues[x + i][y + j]) <= threshold) {
+                        amountOfNotEmptyPixels++;
+                    }
+                }
+            }
+        } else {
+            for (int i = -lastIndex; i <= lastIndex; i++) {
+                for (int j = -lastIndex; j <= lastIndex; j++) {
+                    if ((i + j) % 2 != 0 || i == j) {
+                        if (Color.red(argbValues[x + i][y + j]) <= threshold) {
+                            amountOfNotEmptyPixels++;
+                        }
+                    }
                 }
             }
         }
+
         if (amountOfNotEmptyPixels < amountOfNotEmptyPixelsThreshold) {
             return null;
         }
-        double coeff = 1 / ((amountOfNotEmptyPixels) - 0);
+        double coeff = 1 / amountOfNotEmptyPixels;
 
-        for (int i = -lastIndex; i <= lastIndex; i++) {
-            for (int j = -lastIndex; j <= lastIndex; j++) {
-                if (Color.red(argbValues[x + i][y + j]) <= threshold) {
-                    mask[i + lastIndex][j + lastIndex] = coeff;
-                } else {
-                    mask[i + lastIndex][j + lastIndex] = 0;
+        if (useDiagonalPixels) {
+            for (int i = -lastIndex; i <= lastIndex; i++) {
+                for (int j = -lastIndex; j <= lastIndex; j++) {
+                    if (Color.red(argbValues[x + i][y + j]) <= threshold) {
+                        matrix[i + lastIndex][j + lastIndex] = coeff;
+                    } else {
+                        matrix[i + lastIndex][j + lastIndex] = 0;
+                    }
+                }
+            }
+        } else {
+            for (int i = -lastIndex; i <= lastIndex; i++) {
+                for (int j = -lastIndex; j <= lastIndex; j++) {
+                    if (Color.red(argbValues[x + i][y + j]) <= threshold) {
+                        if ((i + j) % 2 != 0 || i == j) {
+                            matrix[i + lastIndex][j + lastIndex] = coeff;
+                        }
+                    } else {
+                        matrix[i + lastIndex][j + lastIndex] = 0;
+                    }
                 }
             }
         }
+
+        mask = new Mask(matrix);
+
         return mask;
     }
 
@@ -160,6 +195,17 @@ public class Image {
         return newArr;
     }
 
+    private double[] sortFromLToH(double[][] arr) {
+        double[] newArr = new double[arr.length * arr[0].length];
+
+        for (int i = 0; i < arr.length; i++) {
+            for (int j = 0; j < arr[0].length; j++) {
+                newArr[(i * arr.length) + j] = arr[i][j];
+            }
+        }
+        Arrays.sort(newArr);
+        return newArr;
+    }
 
     private int[][] getNeighbourPixels(int size, int x, int y, int[][] argbValues) {
         int[][] neighbourPixels = new int[size][size];
@@ -197,39 +243,41 @@ public class Image {
         argbValues = tempArgbValues;
     }
 
-    public void adaptiveGauss(int threshold, int size, int amountOfNotEmptyPixelsThreshold) {
+    public void adaptiveGauss(int threshold, int size, int amountOfNotEmptyPixelsThreshold, boolean blurEdges, boolean combinedApplyMask) {
         int offset = size / 2;
         int[][] tempArgbValues = argbValues.clone();
 
-        for (int i = offset * 2; i < bitmap.getWidth() - offset * 2; i++) {
-            for (int j = offset * 2; j < bitmap.getHeight() - offset * 2; j++) {
+        if (blurEdges) {
+            for (int i = offset * 2; i < bitmap.getWidth() - offset * 2; i++) {
+                for (int j = offset * 2; j < bitmap.getHeight() - offset * 2; j++) {
 
-                if (Color.red(argbValues[i][j]) >= threshold) {
-                    for (int k = -offset; k <= offset; k++) {
-                        for (int l = -offset; l <= offset; l++) {
-                            if (Color.red(argbValues[i + k][j + l]) <= threshold) {
-                                double[][] matrix = getAdaptionMask(i + k, j + l, size, threshold, amountOfNotEmptyPixelsThreshold);
-                                Mask mask;
+                    if (Color.red(argbValues[i][j]) >= threshold) {
+                        for (int k = -offset; k <= offset; k++) {
+                            for (int l = -offset; l <= offset; l++) {
+                                if (Color.red(argbValues[i + k][j + l]) <= threshold) {
+                                    if ((i + j) % 2 != 0 || i == j) {
+                                        Mask mask = getAdaptionMask(i + k, j + l, 3, threshold, 0, false);
 
-                                if (matrix != null) {
-                                    mask = new Mask(matrix);
-                                    int newA = Color.alpha(argbValues[i][j]);
-                                    float newR;
-                                    if (mask.getMatrix() != null) {
-                                        newR = Math.min(applyMaskForPixel(mask, i, j), 255);
-                                        newR = Math.max(newR, 0);
-                                    } else {
-                                        newR = Color.red(argbValues[i][j]);
+                                        if (mask != null) {
+                                            int newA = Color.alpha(argbValues[i + k][j + l]);
+                                            float newR;
+                                            if (mask.getMatrix() != null) {
+                                                newR = Math.min(applyMaskForPixel(mask, i + k, j + l), 255);
+                                                newR = Math.max(newR, 0);
+                                            } else {
+                                                newR = Color.red(argbValues[i + k][j + l]);
+                                            }
+                                            int finalR = Math.round(newR);
+                                            tempArgbValues[i + k][j + l] = Color.argb(newA, finalR, finalR, finalR);
+                                        }
+
+                                        bitmap.setPixel(i + k, j + l, tempArgbValues[i + k][j + l]);
                                     }
-                                    int finalR = Math.round(newR);
-                                    tempArgbValues[i][j] = Color.argb(newA, finalR, finalR, finalR);
                                 }
                             }
                         }
                     }
                 }
-
-                bitmap.setPixel(i, j, tempArgbValues[i][j]);
             }
         }
 
@@ -237,10 +285,8 @@ public class Image {
             for (int j = offset; j < bitmap.getHeight() - offset; j++) {
 
                 if (Color.red(argbValues[i][j]) >= threshold) {
-                    double[][] matrix = getAdaptionMask(i, j, size, threshold, amountOfNotEmptyPixelsThreshold);
-                    Mask mask;
-                    if (matrix != null) {
-                        mask = new Mask(matrix);
+                    Mask mask = getAdaptionMask(i, j, size, threshold, amountOfNotEmptyPixelsThreshold, true);
+                    if (mask != null) {
                         int newA = Color.alpha(argbValues[i][j]);
                         float newR;
                         if (mask.getMatrix() != null) {
@@ -259,11 +305,22 @@ public class Image {
         argbValues = tempArgbValues.clone();
     }
 
-    public void highlightVisibleCracks(int threshold) {
+    public void highlightVisibleCracks(int threshold, int maskSize, int amountOfNotEmpty) {
+        int offset = maskSize / 2;
+
         for (int i = 0; i < bitmap.getWidth(); i++) {
             for (int j = 0; j < bitmap.getHeight(); j++) {
+                bitmap.setPixel(i, j, argbValues[i][j]);
+            }
+        }
+
+        for (int i = offset; i < bitmap.getWidth() - offset; i++) {
+            for (int j = offset; j < bitmap.getHeight() - offset; j++) {
                 if (Color.red(argbValues[i][j]) >= threshold) {
-                    bitmap.setPixel(i, j, Color.RED);
+                    Mask mask = getAdaptionMask(i, j, maskSize, threshold, amountOfNotEmpty, true);
+                    if (mask != null) {
+                        bitmap.setPixel(i, j, Color.RED);
+                    }
                 }
             }
         }

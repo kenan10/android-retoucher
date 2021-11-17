@@ -7,6 +7,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -20,6 +21,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import java.io.File;
@@ -31,6 +33,7 @@ import java.io.OutputStream;
 import com.example.imageviewer.Editor.Image;
 import com.example.imageviewer.Editor.Mask;
 
+@SuppressLint("UseSwitchCompatOrMaterialCode")
 public class MainActivity extends AppCompatActivity{
     final double[][] matrixBlur = {
             {0, 0.2, 0},
@@ -89,6 +92,8 @@ public class MainActivity extends AppCompatActivity{
     private EditText amountOfNotEmptyInput;
 
     private Button showCracksBtn;
+    private Switch blurEdgesSwitch;
+    private Switch applyHybrid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,6 +109,8 @@ public class MainActivity extends AppCompatActivity{
         amountOfNotEmptyInput = findViewById(R.id.editTextNumber4);
 
         showCracksBtn = findViewById(R.id.button);
+        blurEdgesSwitch = findViewById(R.id.blurEdgesSwitch);
+        applyHybrid = findViewById(R.id.switch1);
     }
 
     private void askPermission() {
@@ -171,6 +178,7 @@ public class MainActivity extends AppCompatActivity{
             imageView2.setImageBitmap(bitmap1);
             bitmap2 = ((BitmapDrawable) imageView1.getDrawable()).getBitmap().copy(Bitmap.Config.ARGB_8888, true);
             image2 = new Image(bitmap2);
+            imageView2.setImageBitmap(image2.getBitmap());
 
             for (int i = 0; i < actionsLayout.getChildCount(); i++) {
                 actionsLayout.getChildAt(i).setEnabled(true);
@@ -247,6 +255,8 @@ public class MainActivity extends AppCompatActivity{
         int threshold;
         int size;
         int amountOfNotEmptyPixelsThreshold;
+        boolean blurEdges = blurEdgesSwitch.isChecked();
+        boolean hybridApply = applyHybrid.isChecked();
 
         if (isEmpty(thresholdInput) || isEmpty(maskSizeInput) || isEmpty(amountOfNotEmptyInput)) {
             Toast.makeText(this, "Please fill depended fields", Toast.LENGTH_SHORT).show();
@@ -255,15 +265,18 @@ public class MainActivity extends AppCompatActivity{
             size = Integer.parseInt(maskSizeInput.getText().toString());
             amountOfNotEmptyPixelsThreshold = Integer.parseInt(amountOfNotEmptyInput.getText().toString());
 
-            image2.adaptiveGauss(threshold, size, amountOfNotEmptyPixelsThreshold);
+            image2.adaptiveGauss(threshold, size, amountOfNotEmptyPixelsThreshold, blurEdges, hybridApply);
             imageView2.setImageBitmap(image2.getBitmap());
         }
     }
 
     public void highlightVisibleCracks(View view) {
         int threshold = Integer.parseInt(thresholdInput.getText().toString());
+        int amountOfNotEmpty = Integer.parseInt(amountOfNotEmptyInput.getText().toString());
+        int maskSize = Integer.parseInt(maskSizeInput.getText().toString());
 
-        image2.highlightVisibleCracks(threshold);
+
+        image2.highlightVisibleCracks(threshold, maskSize, amountOfNotEmpty);
         imageView2.setImageBitmap(image2.getBitmap());
     }
 }
