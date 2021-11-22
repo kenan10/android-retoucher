@@ -129,6 +129,14 @@
                     android:text="Adaptive Gauss" />
 
                 <Button
+                    android:id="@+id/autoContrastBtn5"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:enabled="false"
+                    android:onClick="useHybridFilter"
+                    android:text="Hybrid Filter" />
+
+                <Button
                     android:id="@+id/autoContrastBtn4"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -213,14 +221,5 @@
         android:text="Blur edges"
         app:layout_constraintStart_toEndOf="@+id/button"
         app:layout_constraintTop_toTopOf="@+id/button" />
-
-    <Switch
-        android:id="@+id/switch1"
-        android:layout_width="125dp"
-        android:layout_height="18dp"
-        android:layout_marginStart="8dp"
-        android:text="Hybrid Filter"
-        app:layout_constraintStart_toEndOf="@+id/blurEdgesSwitch"
-        app:layout_constraintTop_toTopOf="@+id/blurEdgesSwitch" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

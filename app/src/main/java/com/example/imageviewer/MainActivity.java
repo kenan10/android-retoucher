@@ -93,7 +93,6 @@ public class MainActivity extends AppCompatActivity{
 
     private Button showCracksBtn;
     private Switch blurEdgesSwitch;
-    private Switch applyHybrid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,7 +109,6 @@ public class MainActivity extends AppCompatActivity{
 
         showCracksBtn = findViewById(R.id.button);
         blurEdgesSwitch = findViewById(R.id.blurEdgesSwitch);
-        applyHybrid = findViewById(R.id.switch1);
     }
 
     private void askPermission() {
@@ -256,7 +254,6 @@ public class MainActivity extends AppCompatActivity{
         int size;
         int amountOfNotEmptyPixelsThreshold;
         boolean blurEdges = blurEdgesSwitch.isChecked();
-        boolean hybridApply = applyHybrid.isChecked();
 
         if (isEmpty(thresholdInput) || isEmpty(maskSizeInput) || isEmpty(amountOfNotEmptyInput)) {
             Toast.makeText(this, "Please fill depended fields", Toast.LENGTH_SHORT).show();
@@ -265,7 +262,25 @@ public class MainActivity extends AppCompatActivity{
             size = Integer.parseInt(maskSizeInput.getText().toString());
             amountOfNotEmptyPixelsThreshold = Integer.parseInt(amountOfNotEmptyInput.getText().toString());
 
-            image2.adaptiveGauss(threshold, size, amountOfNotEmptyPixelsThreshold, blurEdges, hybridApply);
+            image2.adaptiveGauss(threshold, size, amountOfNotEmptyPixelsThreshold, blurEdges);
+            imageView2.setImageBitmap(image2.getBitmap());
+        }
+    }
+
+    public void useHybridFilter(View view) {
+        int threshold;
+        int size;
+        int amountOfNotEmptyPixelsThreshold;
+        boolean blurEdges = blurEdgesSwitch.isChecked();
+
+        if (isEmpty(thresholdInput) || isEmpty(maskSizeInput) || isEmpty(amountOfNotEmptyInput)) {
+            Toast.makeText(this, "Please fill depended fields", Toast.LENGTH_SHORT).show();
+        } else {
+            threshold = Integer.parseInt(thresholdInput.getText().toString());
+            size = Integer.parseInt(maskSizeInput.getText().toString());
+            amountOfNotEmptyPixelsThreshold = Integer.parseInt(amountOfNotEmptyInput.getText().toString());
+
+            image2.hybridFilter(threshold, size, amountOfNotEmptyPixelsThreshold, 60, blurEdges);
             imageView2.setImageBitmap(image2.getBitmap());
         }
     }

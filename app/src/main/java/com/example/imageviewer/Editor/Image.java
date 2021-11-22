@@ -2,11 +2,9 @@ package com.example.imageviewer.Editor;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 
-import java.lang.reflect.Array;
 import java.util.Arrays;
 
 public class Image {
@@ -220,7 +218,7 @@ public class Image {
 
 
     public void useMedianFilter(int threshold) {
-        int size = 9;
+        int size = 21;
         int offset = size / 2;
         int[][] tempArgbValues = new int[bitmap.getWidth()][bitmap.getHeight()];
         for (int i = offset; i < bitmap.getWidth() - offset; i++) {
@@ -243,36 +241,34 @@ public class Image {
         argbValues = tempArgbValues;
     }
 
-    public void adaptiveGauss(int threshold, int size, int amountOfNotEmptyPixelsThreshold, boolean blurEdges, boolean combinedApplyMask) {
-        int offset = size / 2;
+    private void blurEdges(int threshold, int sizeOfMainMask) {
+        int offset = sizeOfMainMask / 2;
         int[][] tempArgbValues = argbValues.clone();
 
-        if (blurEdges) {
-            for (int i = offset * 2; i < bitmap.getWidth() - offset * 2; i++) {
-                for (int j = offset * 2; j < bitmap.getHeight() - offset * 2; j++) {
+        for (int i = offset * 2; i < bitmap.getWidth() - offset * 2; i++) {
+            for (int j = offset * 2; j < bitmap.getHeight() - offset * 2; j++) {
 
-                    if (Color.red(argbValues[i][j]) >= threshold) {
-                        for (int k = -offset; k <= offset; k++) {
-                            for (int l = -offset; l <= offset; l++) {
-                                if (Color.red(argbValues[i + k][j + l]) <= threshold) {
-                                    if ((i + j) % 2 != 0 || i == j) {
-                                        Mask mask = getAdaptionMask(i + k, j + l, 3, threshold, 0, false);
+                if (Color.red(argbValues[i][j]) >= threshold) {
+                    for (int k = -offset; k <= offset; k++) {
+                        for (int l = -offset; l <= offset; l++) {
+                            if (Color.red(argbValues[i + k][j + l]) <= threshold) {
+                                if ((i + j) % 2 != 0 || i == j) {
+                                    Mask mask = getAdaptionMask(i + k, j + l, 3, threshold, 0, false);
 
-                                        if (mask != null) {
-                                            int newA = Color.alpha(argbValues[i + k][j + l]);
-                                            float newR;
-                                            if (mask.getMatrix() != null) {
-                                                newR = Math.min(applyMaskForPixel(mask, i + k, j + l), 255);
-                                                newR = Math.max(newR, 0);
-                                            } else {
-                                                newR = Color.red(argbValues[i + k][j + l]);
-                                            }
-                                            int finalR = Math.round(newR);
-                                            tempArgbValues[i + k][j + l] = Color.argb(newA, finalR, finalR, finalR);
+                                    if (mask != null) {
+                                        int newA = Color.alpha(argbValues[i + k][j + l]);
+                                        float newR;
+                                        if (mask.getMatrix() != null) {
+                                            newR = Math.min(applyMaskForPixel(mask, i + k, j + l), 255);
+                                            newR = Math.max(newR, 0);
+                                        } else {
+                                            newR = Color.red(argbValues[i + k][j + l]);
                                         }
-
-                                        bitmap.setPixel(i + k, j + l, tempArgbValues[i + k][j + l]);
+                                        int finalR = Math.round(newR);
+                                        tempArgbValues[i + k][j + l] = Color.argb(newA, finalR, finalR, finalR);
                                     }
+
+                                    bitmap.setPixel(i + k, j + l, tempArgbValues[i + k][j + l]);
                                 }
                             }
                         }
@@ -280,6 +276,18 @@ public class Image {
                 }
             }
         }
+
+        argbValues = tempArgbValues.clone();
+    }
+
+    public void adaptiveGauss(int threshold, int size, int amountOfNotEmptyPixelsThreshold, boolean blurEdges) {
+        int offset = size / 2;
+
+        if (blurEdges) {
+            blurEdges(threshold, size);
+        }
+
+        int[][] tempArgbValues = argbValues.clone();
 
         for (int i = offset; i < bitmap.getWidth() - offset; i++) {
             for (int j = offset; j < bitmap.getHeight() - offset; j++) {
@@ -299,6 +307,54 @@ public class Image {
                         tempArgbValues[i][j] = Color.argb(newA, finalR, finalR, finalR);
                     }
                 }
+                bitmap.setPixel(i, j, tempArgbValues[i][j]);
+            }
+        }
+        argbValues = tempArgbValues.clone();
+    }
+
+    public void hybridFilter(int threshold, int size, int amountOfNotEmptyPixelsThreshold, int amountOfCroppedPixels, boolean blurEdges) {
+        int offset = size / 2;
+
+        if (blurEdges) {
+            blurEdges(threshold, size);
+        }
+
+        int[][] tempArgbValues = argbValues.clone();
+
+        for (int i = offset; i < bitmap.getWidth() - offset; i++) {
+            for (int j = offset; j < bitmap.getHeight() - offset; j++) {
+
+                if (Color.red(argbValues[i][j]) >= threshold) {
+                    int[][] neighbourPixels = getNeighbourPixels(size, i, j, argbValues);
+                    int[] neighbourPixels1d = sortFromLToH(neighbourPixels);
+                    int amountOfNotEmptyPixels = 0;
+
+                    for (int k = 0; k < neighbourPixels1d.length; k++) {
+                        if (neighbourPixels1d[k] <= threshold) {
+                            amountOfNotEmptyPixels++;
+                        } else if (amountOfNotEmptyPixels >= amountOfNotEmptyPixelsThreshold){
+                            neighbourPixels1d = Arrays.copyOfRange(neighbourPixels1d, 0, k);
+                            neighbourPixels1d = Arrays.copyOfRange(neighbourPixels1d, amountOfCroppedPixels, neighbourPixels1d.length - amountOfCroppedPixels);
+
+                            if (neighbourPixels.length == 0) {
+                                neighbourPixels1d[0] = neighbourPixels[neighbourPixels.length / 2][neighbourPixels[0].length / 2];
+                            }
+
+                            float newR = 0;
+                            int length = neighbourPixels1d.length;
+                            float coef = (float) 1 / (float) (length);
+                            for (int value : neighbourPixels1d) {
+                                newR += value * coef;
+                            }
+                            newR = Math.min(newR, 255);
+                            newR = Math.max(newR, 0);
+                            int finalR = Math.round(newR);
+                            tempArgbValues[i][j] = Color.argb(255, finalR, finalR, finalR);
+                        }
+                    }
+                }
+
                 bitmap.setPixel(i, j, tempArgbValues[i][j]);
             }
         }
