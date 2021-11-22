@@ -104,8 +104,11 @@ public class MainActivity extends AppCompatActivity{
         actionsLayout = findViewById(R.id.actionsLayout);
 
         thresholdInput = findViewById(R.id.editTextNumber2);
+        thresholdInput.setText("230");
         maskSizeInput = findViewById(R.id.editTextNumber3);
+        maskSizeInput.setText("21");
         amountOfNotEmptyInput = findViewById(R.id.editTextNumber4);
+        amountOfNotEmptyInput.setText("40");
 
         showCracksBtn = findViewById(R.id.button);
         blurEdgesSwitch = findViewById(R.id.blurEdgesSwitch);
@@ -280,7 +283,7 @@ public class MainActivity extends AppCompatActivity{
             size = Integer.parseInt(maskSizeInput.getText().toString());
             amountOfNotEmptyPixelsThreshold = Integer.parseInt(amountOfNotEmptyInput.getText().toString());
 
-            image2.hybridFilter(threshold, size, amountOfNotEmptyPixelsThreshold, 60, blurEdges);
+            image2.hybridFilter(threshold, size, amountOfNotEmptyPixelsThreshold, 100, blurEdges);
             imageView2.setImageBitmap(image2.getBitmap());
         }
     }
