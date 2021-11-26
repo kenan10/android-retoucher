@@ -92,6 +92,7 @@ public class MainActivity extends AppCompatActivity{
     private EditText amountOfNotEmptyInput;
 
     private Button showCracksBtn;
+    private Button showEdgesBtn;
     private Switch blurEdgesSwitch;
 
     @Override
@@ -111,6 +112,7 @@ public class MainActivity extends AppCompatActivity{
         amountOfNotEmptyInput.setText("40");
 
         showCracksBtn = findViewById(R.id.button);
+        showEdgesBtn = findViewById(R.id.button2);
         blurEdgesSwitch = findViewById(R.id.blurEdgesSwitch);
     }
 
@@ -185,6 +187,7 @@ public class MainActivity extends AppCompatActivity{
                 actionsLayout.getChildAt(i).setEnabled(true);
             }
             showCracksBtn.setEnabled(true);
+            showEdgesBtn.setEnabled(true);
 
             imageView2.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -211,12 +214,12 @@ public class MainActivity extends AppCompatActivity{
     }
 
     public void makeBrighter(View view) {
-        image2.changeBrightness(1.1);
+        image2.changeBrightness(5);
         imageView2.setImageBitmap(image2.getBitmap());
     }
 
     public void makeDarker(View view) {
-        image2.changeBrightness(0.9);
+        image2.changeBrightness(-5);
         imageView2.setImageBitmap(image2.getBitmap());
     }
 
@@ -246,10 +249,17 @@ public class MainActivity extends AppCompatActivity{
     }
 
     public void useMedianFilter(View view) {
-        int threshold = Integer.parseInt(thresholdInput.getText().toString());
+        int threshold;
+        int size;
 
-        image2.useMedianFilter(threshold);
-        imageView2.setImageBitmap(image2.getBitmap());
+        if (isEmpty(thresholdInput) || isEmpty(maskSizeInput) || isEmpty(amountOfNotEmptyInput)) {
+            Toast.makeText(this, "Please fill depended fields", Toast.LENGTH_SHORT).show();
+        } else {
+            threshold = Integer.parseInt(thresholdInput.getText().toString());
+            size = Integer.parseInt(maskSizeInput.getText().toString());
+            image2.useMedianFilter(threshold, size);
+            imageView2.setImageBitmap(image2.getBitmap());
+        }
     }
 
     public void useAdaptiveGauss(View view) {
@@ -296,5 +306,29 @@ public class MainActivity extends AppCompatActivity{
 
         image2.highlightVisibleCracks(threshold, maskSize, amountOfNotEmpty);
         imageView2.setImageBitmap(image2.getBitmap());
+    }
+
+    public void highlightVisibleEdges(View view) {
+        int threshold = Integer.parseInt(thresholdInput.getText().toString());
+
+        if (isEmpty(thresholdInput)) {
+            Toast.makeText(this, "Please fill depended fields", Toast.LENGTH_SHORT).show();
+        } else {
+            image2.highLightPixels(image2.getEdges(threshold, 3));
+            imageView2.setImageBitmap(image2.getBitmap());
+        }
+    }
+
+    public void blurEdges(View view) {
+        int threshold;
+
+        if (isEmpty(thresholdInput)) {
+            Toast.makeText(this, "Please fill depended fields", Toast.LENGTH_SHORT).show();
+        } else {
+            threshold = Integer.parseInt(thresholdInput.getText().toString());
+
+            image2.blurEdges(threshold, 5, image2.getEdges(threshold, 5));
+            imageView2.setImageBitmap(image2.getBitmap());
+        }
     }
 }

@@ -113,6 +113,14 @@
                     android:text="Auto Contrast" />
 
                 <Button
+                    android:id="@+id/autoContrastBtn6"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:enabled="false"
+                    android:onClick="blurEdges"
+                    android:text="Blur Edges" />
+
+                <Button
                     android:id="@+id/autoContrastBtn2"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -201,15 +209,29 @@
 
     <Button
         android:id="@+id/button"
-        android:layout_width="88dp"
-        android:layout_height="42dp"
+        android:layout_width="103dp"
+        android:layout_height="38dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="4dp"
         android:enabled="false"
         android:onClick="highlightVisibleCracks"
-        android:text="Show"
+        android:text="Cracks"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editTextNumber4" />
+
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="103dp"
+        android:layout_height="38dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        android:enabled="false"
+        android:onClick="highlightVisibleEdges"
+        android:text="Edges"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.38"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/editTextNumber4" />
 
@@ -217,9 +239,10 @@
         android:id="@+id/blurEdgesSwitch"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="14dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="8dp"
         android:text="Blur edges"
-        app:layout_constraintStart_toEndOf="@+id/button"
+        app:layout_constraintStart_toEndOf="@+id/button2"
         app:layout_constraintTop_toTopOf="@+id/button" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

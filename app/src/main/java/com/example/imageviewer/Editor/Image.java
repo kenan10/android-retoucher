@@ -25,20 +25,25 @@ public class Image {
         for (int i = 0; i < bitmap.getWidth(); i++) {
             for (int j = 0; j < bitmap.getHeight(); j++) {
                 int pixel = bitmap.getPixel(i, j);
-                int newPixel = (Color.red(pixel));
                 argbValues[i][j] = pixel;
             }
         }
         return argbValues;
     }
 
-    public void changeBrightness(double coefficient) {
+    public void changeBrightness(double step) {
         for (int i = 0; i < bitmap.getWidth(); i++) {
             for (int j = 0; j < bitmap.getHeight(); j++) {
                 int newA = Color.alpha(argbValues[i][j]);
-                int newR = Math.min(((int) Math.round(Color.red(argbValues[i][j]) * coefficient)), 255);
-                int newG = Math.min(((int) Math.round(Color.green(argbValues[i][j]) * coefficient)), 255);
-                int newB = Math.min(((int) Math.round(Color.blue(argbValues[i][j]) * coefficient)), 255);
+
+                int newR = Math.min(((int) Math.round(Color.red(argbValues[i][j]) + step)), 255);
+                newR = Math.max(newR, 0);
+
+                int newG = Math.min(((int) Math.round(Color.green(argbValues[i][j]) + step)), 255);
+                newG = Math.max(newG, 0);
+
+                int newB = Math.min(((int) Math.round(Color.blue(argbValues[i][j]) + step)), 255);
+                newB = Math.max(newB, 0);
 
                 argbValues[i][j] = Color.argb(newA, newR, newG, newB);
                 bitmap.setPixel(i, j, argbValues[i][j]);
@@ -186,19 +191,7 @@ public class Image {
 
         for (int i = 0; i < arr.length; i++) {
             for (int j = 0; j < arr[0].length; j++) {
-                newArr[(i * arr.length) + j] = Color.red(arr[i][j]);
-            }
-        }
-        Arrays.sort(newArr);
-        return newArr;
-    }
-
-    private double[] sortFromLToH(double[][] arr) {
-        double[] newArr = new double[arr.length * arr[0].length];
-
-        for (int i = 0; i < arr.length; i++) {
-            for (int j = 0; j < arr[0].length; j++) {
-                newArr[(i * arr.length) + j] = arr[i][j];
+                newArr[(i * arr[0].length) + j] = Color.red(arr[i][j]);
             }
         }
         Arrays.sort(newArr);
@@ -217,10 +210,10 @@ public class Image {
     }
 
 
-    public void useMedianFilter(int threshold) {
-        int size = 21;
+    public void useMedianFilter(int threshold, int size) {
         int offset = size / 2;
-        int[][] tempArgbValues = new int[bitmap.getWidth()][bitmap.getHeight()];
+        int[][] tempArgbValues = argbValues.clone();
+
         for (int i = offset; i < bitmap.getWidth() - offset; i++) {
             for (int j = offset; j < bitmap.getHeight() - offset; j++) {
                 if (Color.red(argbValues[i][j]) >= threshold) {
@@ -229,19 +222,14 @@ public class Image {
                     int[] sortedNeighbourPixels = sortFromLToH(neighbourPixels);
                     int newR = sortedNeighbourPixels[sortedNeighbourPixels.length / 2];
                     tempArgbValues[i][j] = Color.argb(newA, newR, newR, newR);
-                } else {
-                    int newA = Color.alpha(argbValues[i][j]);
-                    int newR = Color.red(argbValues[i][j]);
-
-                    tempArgbValues[i][j] = Color.argb(newA, newR, newR, newR);
                 }
                 bitmap.setPixel(i, j, tempArgbValues[i][j]);
             }
         }
-        argbValues = tempArgbValues;
+        argbValues = tempArgbValues.clone();
     }
 
-    private int[][] getEdges(int threshold, int sizeOfMainMask) {
+    public int[][] getEdges(int threshold, int sizeOfMainMask) {
         int offset = sizeOfMainMask / 2;
         int[][] edges = new int[0][2];
 
@@ -272,13 +260,22 @@ public class Image {
         return edges;
     }
 
-    private void blurEdges(int threshold, int sizeOfMainMask, int[][] edgesCords) {
+    public void highLightPixels(int[][] pixels) {
+        for (int i = 0; i < pixels.length; i++) {
+            int x = pixels[i][0];
+            int y = pixels[i][1];
+
+            bitmap.setPixel(x, y, Color.RED);
+        }
+    }
+
+    public void blurEdges(int threshold, int sizeOfMainMask, int[][] edgesCords) {
         int[][] tempArgbValues = argbValues.clone();
 
         for (int i = 0; i < edgesCords.length; i++) {
             int x = edgesCords[i][0];
             int y = edgesCords[i][1];
-            Mask mask = getAdaptionMask(x, y, 3, threshold, 0, false);
+            Mask mask = getAdaptionMask(x, y, sizeOfMainMask, threshold, 0, false);
 
             if (mask != null) {
                 int newA = Color.alpha(argbValues[x][y]);
@@ -299,50 +296,11 @@ public class Image {
         argbValues = tempArgbValues.clone();
     }
 
-    private void blurEdges(int threshold, int sizeOfMainMask) {
-        int offset = sizeOfMainMask / 2;
-        int[][] tempArgbValues = argbValues.clone();
-
-        for (int i = offset * 2; i < bitmap.getWidth() - offset * 2; i++) {
-            for (int j = offset * 2; j < bitmap.getHeight() - offset * 2; j++) {
-
-                if (Color.red(argbValues[i][j]) >= threshold) {
-                    for (int k = -offset; k <= offset; k++) {
-                        for (int l = -offset; l <= offset; l++) {
-                            if (Color.red(argbValues[i + k][j + l]) <= threshold) {
-                                if ((i + j) % 2 != 0 || i == j) {
-                                    Mask mask = getAdaptionMask(i + k, j + l, 3, threshold, 0, false);
-
-                                    if (mask != null) {
-                                        int newA = Color.alpha(argbValues[i + k][j + l]);
-                                        float newR;
-                                        if (mask.getMatrix() != null) {
-                                            newR = Math.min(applyMaskForPixel(mask, i + k, j + l), 255);
-                                            newR = Math.max(newR, 0);
-                                        } else {
-                                            newR = Color.red(argbValues[i + k][j + l]);
-                                        }
-                                        int finalR = Math.round(newR);
-                                        tempArgbValues[i + k][j + l] = Color.argb(newA, finalR, finalR, finalR);
-                                    }
-
-                                    bitmap.setPixel(i + k, j + l, tempArgbValues[i + k][j + l]);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        argbValues = tempArgbValues.clone();
-    }
-
     public void adaptiveGauss(int threshold, int size, int amountOfNotEmptyPixelsThreshold, boolean blurEdges) {
         int offset = size / 2;
 
         if (blurEdges) {
-            blurEdges(threshold, size);
+            blurEdges(threshold, size, getEdges(threshold, 3));
         }
 
         int[][] tempArgbValues = argbValues.clone();
@@ -373,11 +331,8 @@ public class Image {
 
     public void hybridFilter(int threshold, int size, int amountOfNotEmptyPixelsThreshold, int amountOfCroppedPixels, boolean blurEdges) {
         int offset = size / 2;
-        int[][] edges = getEdges(threshold, 3);
-
-//        if (blurEdges) {
-//            blurEdges(threshold, 3);
-//        }
+        int blurEdgesMaskSize = 5;
+        int[][] edges = getEdges(threshold, blurEdgesMaskSize);
 
         int[][] tempArgbValues = argbValues.clone();
 
@@ -394,7 +349,6 @@ public class Image {
                             amountOfNotEmptyPixels++;
                         } else if (amountOfNotEmptyPixels >= amountOfNotEmptyPixelsThreshold){
                             neighbourPixels1d = Arrays.copyOfRange(neighbourPixels1d, 0, k);
-//                            neighbourPixels1d = Arrays.copyOfRange(neighbourPixels1d, amountOfCroppedPixels, neighbourPixels1d.length - amountOfCroppedPixels);
                             neighbourPixels1d = Arrays.copyOfRange(neighbourPixels1d, neighbourPixels1d.length / 2 - amountOfCroppedPixels, neighbourPixels1d.length / 2 + amountOfCroppedPixels);
 
                             if (neighbourPixels.length == 0) {
@@ -420,7 +374,7 @@ public class Image {
         }
         argbValues = tempArgbValues.clone();
         if (blurEdges) {
-            blurEdges(threshold, 3, edges);
+            blurEdges(threshold, blurEdgesMaskSize, edges);
         }
     }
 
