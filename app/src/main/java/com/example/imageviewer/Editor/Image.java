@@ -2,6 +2,7 @@ package com.example.imageviewer.Editor;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.os.Build;
 
 import androidx.annotation.NonNull;
 
@@ -129,7 +130,6 @@ public class Image {
         float amountOfNotEmptyPixels = 0;
         double[][] matrix = new double[size][size];
         Mask mask;
-
 
         if (useDiagonalPixels) {
             for (int i = -lastIndex; i <= lastIndex; i++) {
@@ -329,10 +329,14 @@ public class Image {
         argbValues = tempArgbValues.clone();
     }
 
-    public void hybridFilter(int threshold, int size, int amountOfNotEmptyPixelsThreshold, int amountOfCroppedPixels, boolean blurEdges) {
+    public void hybridFilter(int threshold, int size, int amountOfNotEmptyPixelsThreshold, int amountOfCroppedPixels, boolean blurEdges, boolean before) {
         int offset = size / 2;
-        int blurEdgesMaskSize = 5;
+        int blurEdgesMaskSize = 3;
         int[][] edges = getEdges(threshold, blurEdgesMaskSize);
+
+        if (before && blurEdges) {
+            blurEdges(threshold, blurEdgesMaskSize, edges);
+        }
 
         int[][] tempArgbValues = argbValues.clone();
 
@@ -373,7 +377,7 @@ public class Image {
             }
         }
         argbValues = tempArgbValues.clone();
-        if (blurEdges) {
+        if (blurEdges && !before) {
             blurEdges(threshold, blurEdgesMaskSize, edges);
         }
     }

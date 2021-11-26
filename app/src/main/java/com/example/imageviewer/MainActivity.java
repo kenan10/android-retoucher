@@ -2,6 +2,7 @@ package com.example.imageviewer;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -14,6 +15,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.View;
@@ -94,6 +96,7 @@ public class MainActivity extends AppCompatActivity{
     private Button showCracksBtn;
     private Button showEdgesBtn;
     private Switch blurEdgesSwitch;
+    private Switch blurEdgesBASwitch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,10 +117,12 @@ public class MainActivity extends AppCompatActivity{
         showCracksBtn = findViewById(R.id.button);
         showEdgesBtn = findViewById(R.id.button2);
         blurEdgesSwitch = findViewById(R.id.blurEdgesSwitch);
+        blurEdgesBASwitch = findViewById(R.id.bluredgesBASwitch);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.R)
     private void askPermission() {
-        ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
+        ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.MANAGE_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
     }
 
     @Override
@@ -133,10 +138,10 @@ public class MainActivity extends AppCompatActivity{
     }
 
     private void saveImage() {
-        File dir = new File(Environment.getDataDirectory()+"/"+"recoveredImage");
+        File dir = new File(Environment.getExternalStorageDirectory()+"/"+"recoveredImage");
         dir.mkdirs();
 
-        if (dir.isDirectory()) {
+//        if (dir.isDirectory()) {
             File file = new File(dir, "recoveredImage"+System.currentTimeMillis()+".jpeg");
             try {
                 outputStream = new FileOutputStream(file);
@@ -159,9 +164,9 @@ public class MainActivity extends AppCompatActivity{
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        } else {
-            Toast.makeText(MainActivity.this, "Field to create dir", Toast.LENGTH_SHORT).show();
-        }
+//        } else {
+//            Toast.makeText(MainActivity.this, "Field to create dir", Toast.LENGTH_SHORT).show();
+//        }
     }
 
     @Override
@@ -285,6 +290,7 @@ public class MainActivity extends AppCompatActivity{
         int size;
         int amountOfNotEmptyPixelsThreshold;
         boolean blurEdges = blurEdgesSwitch.isChecked();
+        boolean blurBeforeAfter = blurEdgesBASwitch.isChecked();
 
         if (isEmpty(thresholdInput) || isEmpty(maskSizeInput) || isEmpty(amountOfNotEmptyInput)) {
             Toast.makeText(this, "Please fill depended fields", Toast.LENGTH_SHORT).show();
@@ -293,7 +299,7 @@ public class MainActivity extends AppCompatActivity{
             size = Integer.parseInt(maskSizeInput.getText().toString());
             amountOfNotEmptyPixelsThreshold = Integer.parseInt(amountOfNotEmptyInput.getText().toString());
 
-            image2.hybridFilter(threshold, size, amountOfNotEmptyPixelsThreshold, 100, blurEdges);
+            image2.hybridFilter(threshold, size, amountOfNotEmptyPixelsThreshold, 25, blurEdges, blurBeforeAfter);
             imageView2.setImageBitmap(image2.getBitmap());
         }
     }
@@ -302,7 +308,6 @@ public class MainActivity extends AppCompatActivity{
         int threshold = Integer.parseInt(thresholdInput.getText().toString());
         int amountOfNotEmpty = Integer.parseInt(amountOfNotEmptyInput.getText().toString());
         int maskSize = Integer.parseInt(maskSizeInput.getText().toString());
-
 
         image2.highlightVisibleCracks(threshold, maskSize, amountOfNotEmpty);
         imageView2.setImageBitmap(image2.getBitmap());
@@ -327,7 +332,7 @@ public class MainActivity extends AppCompatActivity{
         } else {
             threshold = Integer.parseInt(thresholdInput.getText().toString());
 
-            image2.blurEdges(threshold, 5, image2.getEdges(threshold, 5));
+            image2.blurEdges(threshold, 9, image2.getEdges(threshold, 9));
             imageView2.setImageBitmap(image2.getBitmap());
         }
     }
