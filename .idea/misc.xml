@@ -6,7 +6,7 @@
         <entry key="..\:/MAN/android_app/Android-Image-Editor/app/src/main/res/layout/activity_main.xml" value="0.36666666666666664" />
         <entry key="..\:/MAN/android_app/Android-Image-Editor/app/src/main/res/layout/layout_adaptive_gauss_dialog.xml" value="0.32382246376811596" />
         <entry key="..\:/MAN/android_app/image_test/app/src/main/res/layout/activity_main.xml" value="0.36666666666666664" />
-        <entry key="..\:/man/image_editor/android_studio/app/src/main/res/layout/activity_main.xml" value="0.25" />
+        <entry key="..\:/man/image_editor/android_studio/app/src/main/res/layout/activity_main.xml" value="0.20416666666666666" />
         <entry key="..\:/man/image_editor/android_studio/app/src/main/res/layout/layout_adaptive_gauss_dialog.xml" value="0.20416666666666666" />
       </map>
     </option>
@@ -16,5 +16,12 @@
   </component>
   <component name="ProjectType">
     <option name="id" value="Android" />
+  </component>
+  <component name="VisualizationToolProject">
+    <option name="state">
+      <ProjectState>
+        <option name="scale" value="0.36666666666666664" />
+      </ProjectState>
+    </option>
   </component>
 </project>

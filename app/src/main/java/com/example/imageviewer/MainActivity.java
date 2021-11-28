@@ -92,6 +92,8 @@ public class MainActivity extends AppCompatActivity{
     private EditText thresholdInput;
     private EditText maskSizeInput;
     private EditText amountOfNotEmptyInput;
+    private EditText edgeMaskSizeInput;
+    private EditText numberOfCutPixelsInput;
 
     private Button showCracksBtn;
     private Button showEdgesBtn;
@@ -109,10 +111,15 @@ public class MainActivity extends AppCompatActivity{
 
         thresholdInput = findViewById(R.id.editTextNumber2);
         thresholdInput.setText("230");
+
         maskSizeInput = findViewById(R.id.editTextNumber3);
         maskSizeInput.setText("21");
+
         amountOfNotEmptyInput = findViewById(R.id.editTextNumber4);
         amountOfNotEmptyInput.setText("40");
+
+        edgeMaskSizeInput = findViewById(R.id.editTextNumber6);
+        numberOfCutPixelsInput = findViewById(R.id.editTextNumber7);
 
         showCracksBtn = findViewById(R.id.button);
         showEdgesBtn = findViewById(R.id.button2);
@@ -141,7 +148,7 @@ public class MainActivity extends AppCompatActivity{
         File dir = new File(Environment.getExternalStorageDirectory()+"/"+"recoveredImage");
         dir.mkdirs();
 
-//        if (dir.isDirectory()) {
+        if (dir.isDirectory()) {
             File file = new File(dir, "recoveredImage"+System.currentTimeMillis()+".jpeg");
             try {
                 outputStream = new FileOutputStream(file);
@@ -164,9 +171,9 @@ public class MainActivity extends AppCompatActivity{
             } catch (IOException e) {
                 e.printStackTrace();
             }
-//        } else {
-//            Toast.makeText(MainActivity.this, "Field to create dir", Toast.LENGTH_SHORT).show();
-//        }
+        } else {
+            Toast.makeText(MainActivity.this, "Field to create dir", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -195,6 +202,7 @@ public class MainActivity extends AppCompatActivity{
             showEdgesBtn.setEnabled(true);
 
             imageView2.setOnClickListener(new View.OnClickListener() {
+                @RequiresApi(api = Build.VERSION_CODES.R)
                 @Override
                 public void onClick(View v) {
                     if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
@@ -212,6 +220,12 @@ public class MainActivity extends AppCompatActivity{
         intent.setType("image/*");
         int requestCode = 1;
         startActivityForResult(intent, requestCode);
+    }
+
+    public void setEnabled(View view) {
+        blurEdgesBASwitch.setEnabled(!blurEdgesBASwitch.isEnabled());
+        edgeMaskSizeInput.setEnabled(!edgeMaskSizeInput.isEnabled());
+        numberOfCutPixelsInput.setEnabled(!numberOfCutPixelsInput.isEnabled());
     }
 
     private boolean isEmpty(EditText myEditText) {
@@ -289,17 +303,22 @@ public class MainActivity extends AppCompatActivity{
         int threshold;
         int size;
         int amountOfNotEmptyPixelsThreshold;
+        int edgeMaskSize;
+        int numberOfCutPixels;
         boolean blurEdges = blurEdgesSwitch.isChecked();
         boolean blurBeforeAfter = blurEdgesBASwitch.isChecked();
 
-        if (isEmpty(thresholdInput) || isEmpty(maskSizeInput) || isEmpty(amountOfNotEmptyInput)) {
+        if ((isEmpty(thresholdInput) || isEmpty(maskSizeInput) || isEmpty(amountOfNotEmptyInput)) || (blurEdges && (isEmpty(edgeMaskSizeInput) || isEmpty(numberOfCutPixelsInput)))) {
             Toast.makeText(this, "Please fill depended fields", Toast.LENGTH_SHORT).show();
         } else {
             threshold = Integer.parseInt(thresholdInput.getText().toString());
             size = Integer.parseInt(maskSizeInput.getText().toString());
             amountOfNotEmptyPixelsThreshold = Integer.parseInt(amountOfNotEmptyInput.getText().toString());
+            edgeMaskSize = Integer.parseInt(edgeMaskSizeInput.getText().toString());
+            numberOfCutPixels = Integer.parseInt(numberOfCutPixelsInput.getText().toString());
 
-            image2.hybridFilter(threshold, size, amountOfNotEmptyPixelsThreshold, 25, blurEdges, blurBeforeAfter);
+
+            image2.hybridFilter(threshold, size, amountOfNotEmptyPixelsThreshold,25, blurEdges, blurBeforeAfter);
             imageView2.setImageBitmap(image2.getBitmap());
         }
     }

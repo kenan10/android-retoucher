@@ -167,92 +167,112 @@
         android:layout_width="103dp"
         android:layout_height="38dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="4dp"
         android:enabled="false"
         android:onClick="highlightVisibleCracks"
         android:text="Cracks"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editTextNumber4" />
+        app:layout_constraintTop_toBottomOf="@+id/tableLayout" />
 
     <Button
         android:id="@+id/button2"
         android:layout_width="103dp"
         android:layout_height="38dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="4dp"
         android:enabled="false"
         android:onClick="highlightVisibleEdges"
         android:text="Edges"
+        app:layout_constraintStart_toEndOf="@+id/button"
+        app:layout_constraintTop_toBottomOf="@+id/tableLayout" />
+
+    <TableLayout
+        android:id="@+id/tableLayout"
+        android:layout_width="392dp"
+        android:layout_height="147dp"
+        android:layout_marginTop="8dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.38"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editTextNumber4" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TableRow
+            android:layout_width="185dp"
+            android:layout_height="wrap_content">
+
+            <EditText
+                android:id="@+id/editTextNumber2"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:ems="10"
+                android:hint="Threshold"
+                android:inputType="number" />
+
+            <EditText
+                android:id="@+id/editTextNumber6"
+                android:layout_width="183dp"
+                android:layout_height="match_parent"
+                android:ems="10"
+                android:enabled="false"
+                android:hint="Edges mask size"
+                android:inputType="number" />
+
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <EditText
+                android:id="@+id/editTextNumber3"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:ems="10"
+                android:hint="Mask size"
+                android:inputType="number" />
+
+            <EditText
+                android:id="@+id/editTextNumber7"
+                android:layout_width="183dp"
+                android:layout_height="match_parent"
+                android:ems="10"
+                android:enabled="false"
+                android:hint="Number of cut"
+                android:inputType="number" />
+
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <EditText
+                android:id="@+id/editTextNumber4"
+                android:layout_width="wrap_content"
+                android:layout_height="41dp"
+                android:ems="10"
+                android:hint="Amount of not empty pixels"
+                android:inputType="number" />
+
+            <Switch
+                android:id="@+id/bluredgesBASwitch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:enabled="false"
+                android:minHeight="48dp"
+                android:text="Blur after"
+                android:visibility="visible" />
+        </TableRow>
+    </TableLayout>
 
     <Switch
         android:id="@+id/blurEdgesSwitch"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:minHeight="48dp"
+        android:onClick="setEnabled"
         android:text="Blur edges"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/button2"
-        app:layout_constraintTop_toTopOf="@+id/button" />
-
-    <EditText
-        android:id="@+id/editTextNumber2"
-        android:layout_width="wrap_content"
-        android:layout_height="41dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:ems="10"
-        android:hint="Threshold"
-        android:inputType="number"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <EditText
-        android:id="@+id/editTextNumber3"
-        android:layout_width="wrap_content"
-        android:layout_height="41dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:ems="10"
-        android:hint="Mask size"
-        android:inputType="number"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editTextNumber2" />
-
-    <EditText
-        android:id="@+id/editTextNumber4"
-        android:layout_width="wrap_content"
-        android:layout_height="41dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="4dp"
-        android:layout_marginEnd="8dp"
-        android:ems="10"
-        android:hint="Amount of not empty pixels"
-        android:inputType="number"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editTextNumber3" />
-
-    <Switch
-        android:id="@+id/bluredgesBASwitch"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
-        android:text="Blur before"
-        app:layout_constraintStart_toEndOf="@+id/editTextNumber2"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/tableLayout" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
