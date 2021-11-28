@@ -318,7 +318,7 @@ public class MainActivity extends AppCompatActivity{
             numberOfCutPixels = Integer.parseInt(numberOfCutPixelsInput.getText().toString());
 
 
-            image2.hybridFilter(threshold, size, amountOfNotEmptyPixelsThreshold,25, blurEdges, blurBeforeAfter);
+            image2.hybridFilter(threshold, size, amountOfNotEmptyPixelsThreshold,numberOfCutPixels, blurEdges, blurBeforeAfter, edgeMaskSize);
             imageView2.setImageBitmap(image2.getBitmap());
         }
     }

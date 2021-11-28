@@ -257,7 +257,7 @@
                 android:layout_height="wrap_content"
                 android:enabled="false"
                 android:minHeight="48dp"
-                android:text="Blur after"
+                android:text="Blur before"
                 android:visibility="visible" />
         </TableRow>
     </TableLayout>
