@@ -329,9 +329,8 @@ public class Image {
         argbValues = tempArgbValues.clone();
     }
 
-    public void hybridFilter(int threshold, int size, int amountOfNotEmptyPixelsThreshold, int amountOfCroppedPixels, boolean blurEdges, boolean after) {
+    public void hybridFilter(int threshold, int size, int amountOfNotEmptyPixelsThreshold, int amountOfCroppedPixels, boolean blurEdges, boolean after, int blurEdgesMaskSize) {
         int offset = size / 2;
-        int blurEdgesMaskSize = 3;
         int[][] edges = getEdges(threshold, blurEdgesMaskSize);
 
         if (after && blurEdges) {
