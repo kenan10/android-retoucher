@@ -162,117 +162,46 @@
 
     </LinearLayout>
 
-    <Button
-        android:id="@+id/button"
-        android:layout_width="103dp"
-        android:layout_height="38dp"
-        android:layout_marginStart="8dp"
-        android:enabled="false"
-        android:onClick="highlightVisibleCracks"
-        android:text="Cracks"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tableLayout" />
-
-    <Button
-        android:id="@+id/button2"
-        android:layout_width="103dp"
-        android:layout_height="38dp"
-        android:layout_marginStart="8dp"
-        android:enabled="false"
-        android:onClick="highlightVisibleEdges"
-        android:text="Edges"
-        app:layout_constraintStart_toEndOf="@+id/button"
-        app:layout_constraintTop_toBottomOf="@+id/tableLayout" />
-
-    <TableLayout
-        android:id="@+id/tableLayout"
-        android:layout_width="392dp"
-        android:layout_height="147dp"
+    <FrameLayout
+        android:id="@+id/frameLayout"
+        android:layout_width="170dp"
+        android:layout_height="170dp"
+        android:layout_marginStart="24dp"
         android:layout_marginTop="8dp"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:background="#9F9F9F"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <TableRow
-            android:layout_width="185dp"
-            android:layout_height="wrap_content">
+    </FrameLayout>
 
-            <EditText
-                android:id="@+id/editTextNumber2"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:ems="10"
-                android:hint="Threshold"
-                android:inputType="number" />
-
-            <EditText
-                android:id="@+id/editTextNumber6"
-                android:layout_width="183dp"
-                android:layout_height="match_parent"
-                android:ems="10"
-                android:enabled="false"
-                android:hint="Edges mask size"
-                android:inputType="number" />
-
-        </TableRow>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <EditText
-                android:id="@+id/editTextNumber3"
-                android:layout_width="wrap_content"
-                android:layout_height="48dp"
-                android:ems="10"
-                android:hint="Mask size"
-                android:inputType="number" />
-
-            <EditText
-                android:id="@+id/editTextNumber7"
-                android:layout_width="183dp"
-                android:layout_height="match_parent"
-                android:ems="10"
-                android:enabled="false"
-                android:hint="Number of cut"
-                android:inputType="number" />
-
-        </TableRow>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <EditText
-                android:id="@+id/editTextNumber4"
-                android:layout_width="wrap_content"
-                android:layout_height="41dp"
-                android:ems="10"
-                android:hint="Amount of not empty pixels"
-                android:inputType="number" />
-
-            <Switch
-                android:id="@+id/bluredgesBASwitch"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:enabled="false"
-                android:minHeight="48dp"
-                android:text="Blur before"
-                android:visibility="visible" />
-        </TableRow>
-    </TableLayout>
-
-    <Switch
-        android:id="@+id/blurEdgesSwitch"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:minHeight="48dp"
-        android:onClick="setEnabled"
-        android:text="Blur edges"
+    <FrameLayout
+        android:layout_width="170dp"
+        android:layout_height="170dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="12dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/button2"
-        app:layout_constraintTop_toBottomOf="@+id/tableLayout" />
+        app:layout_constraintTop_toTopOf="parent">
+
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="143dp"
+        android:layout_height="19dp"
+        android:layout_marginTop="4dp"
+        android:text="Max numbrer of empty"
+        app:layout_constraintStart_toStartOf="@+id/frameLayout"
+        app:layout_constraintTop_toBottomOf="@+id/frameLayout" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="230dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="128dp"
+        android:orientation="vertical"
+        android:rotation="90"
+        android:text="Max numbrer of empty"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_editor_absoluteX="-114dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
