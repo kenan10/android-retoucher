@@ -18,6 +18,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -137,43 +138,16 @@ public class MainActivity extends AppCompatActivity{
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                saveImage();
+                saveImage(image2.getBitmap());
             } else {
                 Toast.makeText(MainActivity.this, "Please provide the required permission!", Toast.LENGTH_SHORT).show();
             }
         }
     }
 
-    private void saveImage() {
-        File dir = new File(Environment.getExternalStorageDirectory()+"/"+"recoveredImage");
-        dir.mkdirs();
-
-        if (dir.isDirectory()) {
-            File file = new File(dir, "recoveredImage"+System.currentTimeMillis()+".jpeg");
-            try {
-                outputStream = new FileOutputStream(file);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-
-            Bitmap bitmap = ((BitmapDrawable) imageView2.getDrawable()).getBitmap();
-
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
-            Toast.makeText(MainActivity.this, "Sucsessfully saved", Toast.LENGTH_SHORT).show();
-
-            try {
-                outputStream.flush();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            try {
-                outputStream.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else {
-            Toast.makeText(MainActivity.this, "Field to create dir", Toast.LENGTH_SHORT).show();
-        }
+    private void saveImage(Bitmap bm) {
+        MediaStore.Images.Media.insertImage(getContentResolver(), bm,
+                "barcodeNumber" + ".jpg Card Image", "barcodeNumber" + ".jpg Card Image");
     }
 
     @Override
@@ -206,7 +180,7 @@ public class MainActivity extends AppCompatActivity{
                 @Override
                 public void onClick(View v) {
                     if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                        saveImage();
+                        saveImage(image2.getBitmap());
                     } else {
                         askPermission();
                     }
