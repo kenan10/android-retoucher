@@ -329,43 +329,68 @@ public class Image {
         argbValues = tempArgbValues.clone();
     }
 
-    public void hybridFilter(int threshold, int size, int amountOfNotEmptyPixelsThreshold, int amountOfCroppedPixels, boolean blurEdges, boolean after, int blurEdgesMaskSize) {
+    // Гібридний фільтр
+    public void hybridFilter(int threshold, int size, int amountOfNotEmptyPixelsThreshold, int amountOfCroppedPixels, boolean blurEdges, boolean before, int blurEdgesMaskSize) {
         int offset = size / 2;
+        // Отримуємо координати країв пошкоджень
         int[][] edges = getEdges(threshold, blurEdgesMaskSize);
 
-        if (after && blurEdges) {
+        // Перевіряємо чи треба зафарбовувати краї та
+        // чи робити це до основного відновелння
+        if (before && blurEdges) {
             blurEdges(threshold, blurEdgesMaskSize, edges);
         }
 
         int[][] tempArgbValues = argbValues.clone();
 
+        // Цикл, що перебирає усі пікселі
         for (int i = offset; i < bitmap.getWidth() - offset; i++) {
             for (int j = offset; j < bitmap.getHeight() - offset; j++) {
 
+                // Визначаємо чи пошкоджений піксель
                 if (Color.red(argbValues[i][j]) >= threshold) {
+                    // Отримуємо сусідні пікселі
                     int[][] neighbourPixels = getNeighbourPixels(size, i, j, argbValues);
+                    // Сортуємо отриманий масив від найменшого до найбільшого
                     int[] neighbourPixels1d = sortFromLToH(neighbourPixels);
                     int amountOfNotEmptyPixels = 0;
 
+                    // Перебираємо відсортований масив
                     for (int k = 0; k < neighbourPixels1d.length; k++) {
+                        // Перевіряємо чи сусідній піксель не пошкоджений
                         if (neighbourPixels1d[k] <= threshold) {
+                            // Збільшуємо кількість не пошкоджених пікселів на 1
                             amountOfNotEmptyPixels++;
+                        // Інакше якщо кількість не пошкоджених пікселів не нижче порогового значення
                         } else if (amountOfNotEmptyPixels >= amountOfNotEmptyPixelsThreshold){
+                            // Обрізаємо масив сусідніх пікселів, залишаючи лише не пусті
                             neighbourPixels1d = Arrays.copyOfRange(neighbourPixels1d, 0, k);
+                            // Відкидаємо крайні значення для того щоб уникнути спотворень
                             neighbourPixels1d = Arrays.copyOfRange(neighbourPixels1d, neighbourPixels1d.length / 2 - amountOfCroppedPixels, neighbourPixels1d.length / 2 + amountOfCroppedPixels);
 
-                            if (neighbourPixels.length == 0) {
+                            // Якщо після відкидання масив став пустим присвоюємо першому елементу значення центрального піксля
+                            if (neighbourPixels1d.length == 0) {
+                                neighbourPixels1d = Arrays.copyOfRange(neighbourPixels1d, 0, 0);
                                 neighbourPixels1d[0] = neighbourPixels[neighbourPixels.length / 2][neighbourPixels[0].length / 2];
                             }
 
                             float newR = 0;
                             int length = neighbourPixels1d.length;
+
+                            // Розраховуємо коефіцієнт для кожного з пікселів
+                            // Коефіцієнт залежить від кількості пікселів, що залишились
                             float coef = (float) 1 / (float) (length);
+
+                            // Обчислюємо нове значення пікселя
                             for (int value : neighbourPixels1d) {
                                 newR += value * coef;
                             }
+
+                            // Перевіряємо чи не виходить нове значення за рамки можливого
                             newR = Math.min(newR, 255);
                             newR = Math.max(newR, 0);
+
+                            // Присвоюємо нове значення пікселю
                             int finalR = Math.round(newR);
                             tempArgbValues[i][j] = Color.argb(255, finalR, finalR, finalR);
                         }
@@ -376,7 +401,10 @@ public class Image {
             }
         }
         argbValues = tempArgbValues.clone();
-        if (blurEdges && !after) {
+
+        // Перевіряємо чи треба зафарбовувати краї та
+        // чи робити це після основного відновелння
+        if (blurEdges && !before) {
             blurEdges(threshold, blurEdgesMaskSize, edges);
         }
     }
