@@ -1,3 +1,24 @@
 <resources>
     <string name="app_name">Image Viewer</string>
+    <string name="set_reset">Set/Reset</string>
+    <string name="invert">Invert</string>
+    <string name="brighter">Brighter</string>
+    <string name="darker">Darker</string>
+    <string name="blur">Blur</string>
+    <string name="sharpen">Sharper</string>
+    <string name="auto_contrast">Auto Contrast</string>
+    <string name="blur_edges">Retouch Edges</string>
+    <string name="gauss_filter">Gaussian Filter</string>
+    <string name="adaptive_gauss">Adaptive Gauss</string>
+    <string name="hybrid_filter">Hybrid Filter</string>
+    <string name="median_filter">Median Filter</string>
+    <string name="cracks">Cracks</string>
+    <string name="edges">Edges</string>
+    <string name="threshold">Threshold</string>
+    <string name="edges_mask_size">Edges mask size</string>
+    <string name="mask_size">Mask size</string>
+    <string name="number_of_cut">Number central</string>
+    <string name="blur_before">Retouch before</string>
+    <string name="blur_edges_switch">Retouch edges</string>
+    <string name="amount_of_not_empty_pixels">Amount of not empty pixels</string>
 </resources>

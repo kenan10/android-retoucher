@@ -4,24 +4,9 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/MAN/android_app/Android-Image-Editor/app/src/main/res/layout/activity_main.xml" value="0.36666666666666664" />
-        <entry key="..\:/MAN/android_app/Android-Image-Editor/app/src/main/res/layout/layout_adaptive_gauss_dialog.xml" value="0.32382246376811596" />
-        <entry key="..\:/MAN/android_app/image_test/app/src/main/res/layout/activity_main.xml" value="0.36666666666666664" />
-        <entry key="..\:/man/image_editor/android_studio/app/src/main/res/layout/activity_main.xml" value="0.20416666666666666" />
-        <entry key="..\:/man/image_editor/android_studio/app/src/main/res/layout/layout_adaptive_gauss_dialog.xml" value="0.20416666666666666" />
       </map>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
-    <output url="file://$PROJECT_DIR$/build/classes" />
-  </component>
-  <component name="ProjectType">
-    <option name="id" value="Android" />
-  </component>
-  <component name="VisualizationToolProject">
-    <option name="state">
-      <ProjectState>
-        <option name="scale" value="0.36666666666666664" />
-      </ProjectState>
-    </option>
-  </component>
+  <component name="ExternalStorageConfigurationManager" enabled="true" />
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="11" project-jdk-type="JavaSDK" />
 </project>

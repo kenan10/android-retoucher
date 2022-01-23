@@ -67,6 +67,7 @@ public class MainActivity extends AppCompatActivity{
             {0.125, 0, 0.125},
             {0.125, 0.125, 0.125}
     };
+    Mask maskGaussRestore3x3 = new Mask(gaussRestoreMask3x3);
     private final double[][] matrixGaussRestore5x5 = {
             {0.0417, 0.0417, 0.0417, 0.0417, 0.0417},
             {0.0417, 0.0417, 0.0417, 0.0417, 0.0417},
@@ -148,6 +149,7 @@ public class MainActivity extends AppCompatActivity{
     private void saveImage(Bitmap bm) {
         MediaStore.Images.Media.insertImage(getContentResolver(), bm,
                 "barcodeNumber" + ".jpg Card Image", "barcodeNumber" + ".jpg Card Image");
+        Toast.makeText(MainActivity.this, "Result is succesfully saved!", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -199,7 +201,6 @@ public class MainActivity extends AppCompatActivity{
     public void setEnabled(View view) {
         blurEdgesBASwitch.setEnabled(!blurEdgesBASwitch.isEnabled());
         edgeMaskSizeInput.setEnabled(!edgeMaskSizeInput.isEnabled());
-        numberOfCutPixelsInput.setEnabled(!numberOfCutPixelsInput.isEnabled());
     }
 
     private boolean isEmpty(EditText myEditText) {
@@ -237,8 +238,15 @@ public class MainActivity extends AppCompatActivity{
     }
 
     public void useGaussFilter(View view) {
-        image2.applyMask(maskGaussRestore5x5);
-        imageView2.setImageBitmap(image2.getBitmap());
+        int threshold;
+
+        if (isEmpty(thresholdInput) || isEmpty(maskSizeInput) || isEmpty(amountOfNotEmptyInput)) {
+            Toast.makeText(this, "Please fill depended fields", Toast.LENGTH_SHORT).show();
+        } else {
+            threshold = Integer.parseInt(thresholdInput.getText().toString());
+            image2.applyMaskForCracks(maskGaussRestore3x3, threshold);
+            imageView2.setImageBitmap(image2.getBitmap());
+        }
     }
 
     public void useMedianFilter(View view) {
@@ -277,10 +285,10 @@ public class MainActivity extends AppCompatActivity{
         int threshold;
         int size;
         int amountOfNotEmptyPixelsThreshold;
-        int edgeMaskSize;
+        int edgeMaskSize = 0;
         int numberOfCutPixels;
         boolean blurEdges = blurEdgesSwitch.isChecked();
-        boolean blurBeforeAfter = blurEdgesBASwitch.isChecked();
+        boolean blurEdgesBefore = blurEdgesBASwitch.isChecked();
 
         if ((isEmpty(thresholdInput) || isEmpty(maskSizeInput) || isEmpty(amountOfNotEmptyInput)) || (blurEdges && (isEmpty(edgeMaskSizeInput) || isEmpty(numberOfCutPixelsInput)))) {
             Toast.makeText(this, "Please fill depended fields", Toast.LENGTH_SHORT).show();
@@ -288,11 +296,12 @@ public class MainActivity extends AppCompatActivity{
             threshold = Integer.parseInt(thresholdInput.getText().toString());
             size = Integer.parseInt(maskSizeInput.getText().toString());
             amountOfNotEmptyPixelsThreshold = Integer.parseInt(amountOfNotEmptyInput.getText().toString());
-            edgeMaskSize = Integer.parseInt(edgeMaskSizeInput.getText().toString());
+            if (blurEdges) {
+                edgeMaskSize = Integer.parseInt(edgeMaskSizeInput.getText().toString());
+            }
             numberOfCutPixels = Integer.parseInt(numberOfCutPixelsInput.getText().toString());
 
-
-            image2.hybridFilter(threshold, size, amountOfNotEmptyPixelsThreshold,numberOfCutPixels, blurEdges, blurBeforeAfter, edgeMaskSize);
+            image2.hybridFilter(threshold, size, amountOfNotEmptyPixelsThreshold,numberOfCutPixels, blurEdges, blurEdgesBefore, edgeMaskSize);
             imageView2.setImageBitmap(image2.getBitmap());
         }
     }

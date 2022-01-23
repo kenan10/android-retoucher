@@ -78,7 +78,7 @@ public class Image {
 
                 for (int k = -offset; k <= offset; k++) {
                     for (int l = -offset; l <= offset; l++) {
-                        newR += matrix[k + offset][l + offset] * Color.red(argbValues[k + l][k + l]);
+                        newR += matrix[k + offset][l + offset] * Color.red(argbValues[i + k][j + l]);
                     }
                 }
 
@@ -104,6 +104,32 @@ public class Image {
         }
 
         return newR;
+    }
+
+    public void applyMaskForCracks(Mask mask, int threshold) {
+        int[][] tempArgbValues = argbValues;
+        int offset = mask.getSize() / 2;
+        double[][] matrix = mask.getMatrix();
+
+        for (int i = offset; i < bitmap.getWidth() - offset; i++) {
+            for (int j = offset; j < bitmap.getHeight() - offset; j++) {
+                if (Color.red(argbValues[i][j]) >= threshold) {
+
+                    int newR = 0;
+
+                    for (int k = -offset; k <= offset; k++) {
+                        for (int l = -offset; l <= offset; l++) {
+                            newR += matrix[k + offset][l + offset] * Color.red(argbValues[i + k][j + l]);
+                        }
+                    }
+
+                    tempArgbValues[i][j] = Color.argb(255, newR, newR, newR);
+                    bitmap.setPixel(i, j, tempArgbValues[i][j]);
+                }
+            }
+        }
+
+        argbValues = tempArgbValues;
     }
 
     public void autoContrast() {
@@ -352,7 +378,8 @@ public class Image {
                     // Отримуємо сусідні пікселі
                     int[][] neighbourPixels = getNeighbourPixels(size, i, j, argbValues);
                     // Сортуємо отриманий масив від найменшого до найбільшого
-                    int[] neighbourPixels1d = sortFromLToH(neighbourPixels);
+                    int[] sorted = sortFromLToH(neighbourPixels);
+                    int[] neighbourPixels1d = sorted;
                     int amountOfNotEmptyPixels = 0;
 
                     // Перебираємо відсортований масив
@@ -366,12 +393,12 @@ public class Image {
                             // Обрізаємо масив сусідніх пікселів, залишаючи лише не пусті
                             neighbourPixels1d = Arrays.copyOfRange(neighbourPixels1d, 0, k);
                             // Відкидаємо крайні значення для того щоб уникнути спотворень
-                            neighbourPixels1d = Arrays.copyOfRange(neighbourPixels1d, neighbourPixels1d.length / 2 - amountOfCroppedPixels, neighbourPixels1d.length / 2 + amountOfCroppedPixels);
+                            neighbourPixels1d = Arrays.copyOfRange(neighbourPixels1d, (neighbourPixels1d.length / 2 + 1) - amountOfCroppedPixels, (neighbourPixels1d.length / 2 + 1) + amountOfCroppedPixels + 1);
 
                             // Якщо після відкидання масив став пустим присвоюємо першому елементу значення центрального піксля
                             if (neighbourPixels1d.length == 0) {
-                                neighbourPixels1d = Arrays.copyOfRange(neighbourPixels1d, 0, 0);
-                                neighbourPixels1d[0] = neighbourPixels[neighbourPixels.length / 2][neighbourPixels[0].length / 2];
+                                neighbourPixels1d = Arrays.copyOfRange(neighbourPixels1d, 0, 1);
+                                neighbourPixels1d[0] = sorted[sorted.length / 2];
                             }
 
                             float newR = 0;
