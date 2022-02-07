@@ -1,24 +1,32 @@
 <resources>
     <string name="app_name">Image Viewer</string>
-    <string name="set_reset">Set/Reset</string>
-    <string name="invert">Invert</string>
-    <string name="brighter">Brighter</string>
-    <string name="darker">Darker</string>
-    <string name="blur">Blur</string>
-    <string name="sharpen">Sharper</string>
-    <string name="auto_contrast">Auto Contrast</string>
-    <string name="blur_edges">Retouch Edges</string>
-    <string name="gauss_filter">Gaussian Filter</string>
-    <string name="adaptive_gauss">Adaptive Gauss</string>
-    <string name="hybrid_filter">Hybrid Filter</string>
-    <string name="median_filter">Median Filter</string>
-    <string name="cracks">Cracks</string>
-    <string name="edges">Edges</string>
-    <string name="threshold">Threshold</string>
-    <string name="edges_mask_size">Edges mask size</string>
-    <string name="mask_size">Mask size</string>
-    <string name="number_of_cut">Number central</string>
-    <string name="blur_before">Retouch before</string>
-    <string name="blur_edges_switch">Retouch edges</string>
-    <string name="amount_of_not_empty_pixels">Amount of not empty pixels</string>
+    <string name="set_reset">Завантажити</string>
+    <string name="invert">Інвертувати</string>
+    <string name="brighter">Яскравіше</string>
+    <string name="darker">Темніше</string>
+    <string name="blur">Розмити</string>
+    <string name="sharpen">Збільшити різкість</string>
+    <string name="auto_contrast">Автоконтраст</string>
+    <string name="blur_edges">Ретушувати краї</string>
+    <string name="gauss_filter">Гаусовий фільтр</string>
+    <string name="adaptive_gauss">Адаптивний Гаус</string>
+    <string name="hybrid_filter">Гібридний Фільтр</string>
+    <string name="median_filter">Медіанний фільтр</string>
+    <string name="cracks">Ретуш</string>
+    <string name="edges">Краї</string>
+    <string name="threshold">Поріг яксравості</string>
+    <string name="edges_mask_size">Розмір маски країв</string>
+    <string name="mask_size">Розмір маски</string>
+    <string name="number_of_cut">Кількість центральних</string>
+    <string name="blur_before">Ретуш до</string>
+    <string name="blur_edges_switch">Ретуш країв</string>
+    <string name="amount_of_not_empty_pixels">Кількість непошкоджених</string>
+    <string name="settings_languages">Мова</string>
+    <string name="brightness">Яскравість</string>
+
+    <string-array name="languages">
+        <item>English</item>
+        <item>Ukrainian</item>
+        <item>Chinese</item>
+    </string-array>
 </resources>

@@ -1,25 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">图像查看器</string>
-    <string name="set_reset">设置/重置</string>
-    <string name="invert">倒置</string>
-    <string name="brighter">更亮</string>
+    <string name="app_name">Image Viewer</string>
+    <string name="set_reset" translatable="false">下载</string>
+    <string name="invert" translatable="false">倒置</string>
+    <string name="brighter" translatable="false">更亮</string>
     <string name="darker">较暗</string>
     <string name="blur">模糊</string>
-    <string name="sharpen">自动对比</string>
-    <string name="auto_contrast">模糊边缘</string>
-    <string name="blur_edges">高斯过滤器</string>
-    <string name="gauss_filter">自适应高斯</string>
-    <string name="adaptive_gauss">混合滤波器</string>
-    <string name="hybrid_filter">中位过滤器</string>
-    <string name="median_filter">裂缝</string>
-    <string name="cracks">边缘</string>
-    <string name="edges">临界点</string>
-    <string name="threshold">边缘掩模大小</string>
-    <string name="edges_mask_size">面具大小</string>
-    <string name="mask_size">削减数量</string>
-    <string name="number_of_cut">之前模糊</string>
-    <string name="blur_before">模糊边缘</string>
-    <string name="blur_edges_switch">模糊边缘</string>
-    <string name="amount_of_not_empty_pixels">非空像素数量</string>
+    <string name="sharpen">增加锐度</string>
+    <string name="auto_contrast">自动对比度</string>
+    <string name="blur_edges">修饰边缘</string>
+    <string name="gauss_filter">高斯滤波器</string>
+    <string name="adaptive_gauss">自适应高斯</string>
+    <string name="hybrid_filter">混合过滤器</string>
+    <string name="median_filter">中值滤波器</string>
+    <string name="cracks">润饰</string>
+    <string name="edges">边缘</string>
+    <string name="threshold">门槛为美</string>
+    <string name="edges_mask_size">蒙版边缘的大小</string>
+    <string name="mask_size">口罩尺寸</string>
+    <string name="number_of_cut">中心数</string>
+    <string name="blur_before">修饰为</string>
+    <string name="blur_edges_switch">边缘修饰</string>
+    <string name="amount_of_not_empty_pixels">未损坏数</string>
+    <string name="settings_languages">语</string>
 </resources>

@@ -6,6 +6,45 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <com.google.android.material.slider.Slider
+        android:id="@+id/slider"
+        android:layout_width="388dp"
+        android:layout_height="45dp"
+        android:layout_gravity="center"
+        android:layout_marginBottom="8dp"
+        android:value="0"
+        android:valueFrom="-255"
+        android:valueTo="255"
+        app:layout_constraintBottom_toTopOf="@+id/autoContrastBtn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.521"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/autoContrastBtn"
+        android:layout_width="388dp"
+        android:layout_height="52dp"
+        android:layout_marginBottom="8dp"
+        android:enabled="false"
+        android:onClick="makeAutoContrast"
+        android:text="@string/auto_contrast"
+        app:layout_constraintBottom_toTopOf="@+id/hybridFilter"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.521"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/hybridFilter"
+        android:layout_width="388dp"
+        android:layout_height="50dp"
+        android:layout_marginBottom="8dp"
+        android:enabled="false"
+        android:onClick="useHybridFilter"
+        android:text="@string/hybrid_filter"
+        app:layout_constraintBottom_toTopOf="@+id/set_reset"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
     <Button
         android:id="@+id/set_reset"
         android:layout_width="388dp"
@@ -44,126 +83,8 @@
         app:layout_constraintVertical_bias="0.466"
         tools:srcCompat="@tools:sample/backgrounds/scenic" />
 
-    <LinearLayout
-        android:id="@+id/Table"
-        android:layout_width="384dp"
-        android:layout_height="223dp"
-        android:layout_marginBottom="8dp"
-        android:orientation="horizontal"
-        app:layout_constraintBottom_toTopOf="@+id/set_reset"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
-
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <LinearLayout
-                android:id="@+id/actionsLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <Button
-                    android:id="@+id/invertBtn"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:enabled="false"
-                    android:onClick="makeNegative"
-                    android:text="@string/invert" />
-
-                <Button
-                    android:id="@+id/brighterBtn"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:enabled="false"
-                    android:onClick="makeBrighter"
-                    android:text="@string/brighter" />
-
-                <Button
-                    android:id="@+id/darkerBtn"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:enabled="false"
-                    android:onClick="makeDarker"
-                    android:text="@string/darker" />
-
-                <Button
-                    android:id="@+id/blurBtn"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:enabled="false"
-                    android:onClick="makeBlurred"
-                    android:text="@string/blur" />
-
-                <Button
-                    android:id="@+id/sharpnessBtn"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:enabled="false"
-                    android:onClick="makeSharpen"
-                    android:text="@string/sharpen" />
-
-                <Button
-                    android:id="@+id/autoContrastBtn"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:enabled="false"
-                    android:onClick="makeAutoContrast"
-                    android:text="@string/auto_contrast" />
-
-                <Button
-                    android:id="@+id/autoContrastBtn6"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:enabled="false"
-                    android:onClick="blurEdges"
-                    android:text="@string/blur_edges" />
-
-                <Button
-                    android:id="@+id/autoContrastBtn2"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:enabled="false"
-                    android:onClick="useGaussFilter"
-                    android:text="@string/gauss_filter" />
-
-                <Button
-                    android:id="@+id/autoContrastBtn3"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:enabled="false"
-                    android:onClick="useAdaptiveGauss"
-                    android:text="@string/adaptive_gauss" />
-
-                <Button
-                    android:id="@+id/autoContrastBtn5"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:enabled="false"
-                    android:onClick="useHybridFilter"
-                    android:text="@string/hybrid_filter" />
-
-                <Button
-                    android:id="@+id/autoContrastBtn4"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:enabled="false"
-                    android:onClick="useMedianFilter"
-                    android:text="@string/median_filter" />
-
-            </LinearLayout>
-        </ScrollView>
-
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-
-    </LinearLayout>
-
     <Button
-        android:id="@+id/button"
+        android:id="@+id/showCracks"
         android:layout_width="103dp"
         android:layout_height="38dp"
         android:layout_marginStart="8dp"
@@ -174,14 +95,14 @@
         app:layout_constraintTop_toBottomOf="@+id/tableLayout" />
 
     <Button
-        android:id="@+id/button2"
+        android:id="@+id/showEdges"
         android:layout_width="103dp"
         android:layout_height="38dp"
         android:layout_marginStart="8dp"
         android:enabled="false"
         android:onClick="highlightVisibleEdges"
         android:text="@string/edges"
-        app:layout_constraintStart_toEndOf="@+id/button"
+        app:layout_constraintStart_toEndOf="@+id/showCracks"
         app:layout_constraintTop_toBottomOf="@+id/tableLayout" />
 
     <TableLayout
@@ -272,7 +193,26 @@
         android:onClick="setEnabled"
         android:text="@string/blur_edges_switch"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/button2"
+        app:layout_constraintStart_toEndOf="@+id/showEdges"
         app:layout_constraintTop_toBottomOf="@+id/tableLayout" />
+
+    <Button
+        android:id="@+id/settings_btn"
+        android:layout_width="90dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="1dp"
+        android:text="Button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/showCracks" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:text="@string/brightness"
+        app:layout_constraintBottom_toTopOf="@+id/slider"
+        app:layout_constraintStart_toStartOf="@+id/slider" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

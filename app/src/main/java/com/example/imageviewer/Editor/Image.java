@@ -9,7 +9,9 @@ import androidx.annotation.NonNull;
 import java.util.Arrays;
 
 public class Image {
+    private final Bitmap initialBitmap;
     private final Bitmap bitmap;
+    private final int[][] initialArgbValues;
     int[][] argbValues;
 
     public Bitmap getBitmap() {
@@ -17,6 +19,9 @@ public class Image {
     }
 
     public Image (Bitmap bitmap) {
+        this.initialBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+        this.initialArgbValues = getRgbValuesFromBitmap(this.initialBitmap);
+
         this.bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
         this.argbValues = getRgbValuesFromBitmap(this.bitmap);
     }
@@ -32,18 +37,18 @@ public class Image {
         return argbValues;
     }
 
-    public void changeBrightness(double step) {
+    public void setBrightness(double value) {
         for (int i = 0; i < bitmap.getWidth(); i++) {
             for (int j = 0; j < bitmap.getHeight(); j++) {
                 int newA = Color.alpha(argbValues[i][j]);
 
-                int newR = Math.min(((int) Math.round(Color.red(argbValues[i][j]) + step)), 255);
+                int newR = Math.min(((int) Math.round(Color.red(initialArgbValues[i][j]) + value)), 255);
                 newR = Math.max(newR, 0);
 
-                int newG = Math.min(((int) Math.round(Color.green(argbValues[i][j]) + step)), 255);
+                int newG = Math.min(((int) Math.round(Color.green(initialArgbValues[i][j]) + value)), 255);
                 newG = Math.max(newG, 0);
 
-                int newB = Math.min(((int) Math.round(Color.blue(argbValues[i][j]) + step)), 255);
+                int newB = Math.min(((int) Math.round(Color.blue(initialArgbValues[i][j]) + value)), 255);
                 newB = Math.max(newB, 0);
 
                 argbValues[i][j] = Color.argb(newA, newR, newG, newB);

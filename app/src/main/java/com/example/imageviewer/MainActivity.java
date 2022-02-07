@@ -17,71 +17,30 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.Toast;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-
 import com.example.imageviewer.Editor.Image;
 import com.example.imageviewer.Editor.Mask;
+import com.google.android.material.slider.LabelFormatter;
+import com.google.android.material.slider.Slider;
 
 @SuppressLint("UseSwitchCompatOrMaterialCode")
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppCompatActivity {
     final double[][] matrixBlur = {
             {0, 0.2, 0},
             {0.2, 0.2, 0.2},
             {0, 0.2, 0}
     };
-    Mask maskBlur = new Mask(matrixBlur);
-
-    private final double[][] maskBlur7x7 = {
-            {1/49f, 1/49f, 1/49f, 1/49f, 1/49f, 1/49f, 1/49f},
-            {1/49f, 1/49f, 1/49f, 1/49f, 1/49f, 1/49f, 1/49f},
-            {1/49f, 1/49f, 1/49f, 1/49f, 1/49f, 1/49f, 1/49f},
-            {1/49f, 1/49f, 1/49f, 1/49f, 1/49f, 1/49f, 1/49f},
-            {1/49f, 1/49f, 1/49f, 1/49f, 1/49f, 1/49f, 1/49f},
-            {1/49f, 1/49f, 1/49f, 1/49f, 1/49f, 1/49f, 1/49f},
-            {1/49f, 1/49f, 1/49f, 1/49f, 1/49f, 1/49f, 1/49f},
-    };
-
-    final double[][] matrixSharpen = {
-            {-1, -1, -1},
-            {-1, 9, -1},
-            {-1, -1, -1}
-    };
-    Mask maskSharpen = new Mask(matrixSharpen);
-
-    private final double[][] gaussRestoreMask3x3 = {
-            {0.125, 0.125, 0.125},
-            {0.125, 0, 0.125},
-            {0.125, 0.125, 0.125}
-    };
-    Mask maskGaussRestore3x3 = new Mask(gaussRestoreMask3x3);
-    private final double[][] matrixGaussRestore5x5 = {
-            {0.0417, 0.0417, 0.0417, 0.0417, 0.0417},
-            {0.0417, 0.0417, 0.0417, 0.0417, 0.0417},
-               {0.0417, 0.0417, 0, 0.0417, 0.0417},
-            {0.0417, 0.0417, 0.0417, 0.0417, 0.0417},
-            {0.0417, 0.0417, 0.0417, 0.0417, 0.0417},
-    };
-    Mask maskGaussRestore5x5 = new Mask(matrixGaussRestore5x5);
-
 
     int REQUEST_CODE = 100;
 
-    private LinearLayout actionsLayout;
-    private OutputStream outputStream;
+    private Button settingsBtn;
 
     private ImageView imageView1;
     private Bitmap bitmap1;
@@ -102,14 +61,48 @@ public class MainActivity extends AppCompatActivity{
     private Switch blurEdgesSwitch;
     private Switch blurEdgesBASwitch;
 
+    private Button autocontrastBtn;
+    private Button hybridFilterBtn;
+    private Slider slider;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        settingsBtn = findViewById(R.id.settings_btn);
+        settingsBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent myIntent = new Intent(view.getContext(), Settings.class);
+                startActivityForResult(myIntent, 0);
+            }
+        });
+
+        slider = findViewById(R.id.slider);
+        slider.setLabelFormatter(new LabelFormatter() {
+            @NonNull
+            @Override
+            public String getFormattedValue(float value) {
+                int newValue = (int) value;
+
+                return String.valueOf(newValue);
+            }
+        });
+        slider.addOnChangeListener(new Slider.OnChangeListener() {
+            @Override
+            public void onValueChange(@NonNull Slider slider, float value, boolean fromUser) {
+                value = (int) value;
+                image2.setBrightness(value);
+            }
+        });
+
+        autocontrastBtn = findViewById(R.id.autoContrastBtn);
+        hybridFilterBtn = findViewById(R.id.hybridFilter);
+
         imageView1 = findViewById(R.id.startImage);
         imageView2 = findViewById(R.id.changedImage);
-        actionsLayout = findViewById(R.id.actionsLayout);
 
         thresholdInput = findViewById(R.id.editTextNumber2);
         thresholdInput.setText("230");
@@ -123,8 +116,8 @@ public class MainActivity extends AppCompatActivity{
         edgeMaskSizeInput = findViewById(R.id.editTextNumber6);
         numberOfCutPixelsInput = findViewById(R.id.editTextNumber7);
 
-        showCracksBtn = findViewById(R.id.button);
-        showEdgesBtn = findViewById(R.id.button2);
+        showCracksBtn = findViewById(R.id.showCracks);
+        showEdgesBtn = findViewById(R.id.showEdges);
         blurEdgesSwitch = findViewById(R.id.blurEdgesSwitch);
         blurEdgesBASwitch = findViewById(R.id.bluredgesBASwitch);
     }
@@ -171,11 +164,11 @@ public class MainActivity extends AppCompatActivity{
             image2 = new Image(bitmap2);
             imageView2.setImageBitmap(image2.getBitmap());
 
-            for (int i = 0; i < actionsLayout.getChildCount(); i++) {
-                actionsLayout.getChildAt(i).setEnabled(true);
-            }
+
             showCracksBtn.setEnabled(true);
             showEdgesBtn.setEnabled(true);
+            autocontrastBtn.setEnabled(true);
+            hybridFilterBtn.setEnabled(true);
 
             imageView2.setOnClickListener(new View.OnClickListener() {
                 @RequiresApi(api = Build.VERSION_CODES.R)
@@ -207,78 +200,9 @@ public class MainActivity extends AppCompatActivity{
         return myEditText.getText().toString().trim().length() == 0;
     }
 
-    public void makeBrighter(View view) {
-        image2.changeBrightness(5);
-        imageView2.setImageBitmap(image2.getBitmap());
-    }
-
-    public void makeDarker(View view) {
-        image2.changeBrightness(-5);
-        imageView2.setImageBitmap(image2.getBitmap());
-    }
-
-    public void makeNegative(View view) {
-        image2.negative();
-        imageView2.setImageBitmap(image2.getBitmap());
-    }
-
-    public void makeBlurred(View view) {
-        image2.applyMask(maskBlur);
-        imageView2.setImageBitmap(image2.getBitmap());
-    }
-
-    public void makeSharpen(View view) {
-        image2.applyMask(maskSharpen);
-        imageView2.setImageBitmap(image2.getBitmap());
-    }
-
     public void makeAutoContrast(View view) {
         image2.autoContrast();
         imageView2.setImageBitmap(image2.getBitmap());
-    }
-
-    public void useGaussFilter(View view) {
-        int threshold;
-
-        if (isEmpty(thresholdInput) || isEmpty(maskSizeInput) || isEmpty(amountOfNotEmptyInput)) {
-            Toast.makeText(this, "Please fill depended fields", Toast.LENGTH_SHORT).show();
-        } else {
-            threshold = Integer.parseInt(thresholdInput.getText().toString());
-            image2.applyMaskForCracks(maskGaussRestore3x3, threshold);
-            imageView2.setImageBitmap(image2.getBitmap());
-        }
-    }
-
-    public void useMedianFilter(View view) {
-        int threshold;
-        int size;
-
-        if (isEmpty(thresholdInput) || isEmpty(maskSizeInput) || isEmpty(amountOfNotEmptyInput)) {
-            Toast.makeText(this, "Please fill depended fields", Toast.LENGTH_SHORT).show();
-        } else {
-            threshold = Integer.parseInt(thresholdInput.getText().toString());
-            size = Integer.parseInt(maskSizeInput.getText().toString());
-            image2.useMedianFilter(threshold, size);
-            imageView2.setImageBitmap(image2.getBitmap());
-        }
-    }
-
-    public void useAdaptiveGauss(View view) {
-        int threshold;
-        int size;
-        int amountOfNotEmptyPixelsThreshold;
-        boolean blurEdges = blurEdgesSwitch.isChecked();
-
-        if (isEmpty(thresholdInput) || isEmpty(maskSizeInput) || isEmpty(amountOfNotEmptyInput)) {
-            Toast.makeText(this, "Please fill depended fields", Toast.LENGTH_SHORT).show();
-        } else {
-            threshold = Integer.parseInt(thresholdInput.getText().toString());
-            size = Integer.parseInt(maskSizeInput.getText().toString());
-            amountOfNotEmptyPixelsThreshold = Integer.parseInt(amountOfNotEmptyInput.getText().toString());
-
-            image2.adaptiveGauss(threshold, size, amountOfNotEmptyPixelsThreshold, blurEdges);
-            imageView2.setImageBitmap(image2.getBitmap());
-        }
     }
 
     public void useHybridFilter(View view) {
@@ -322,19 +246,6 @@ public class MainActivity extends AppCompatActivity{
             Toast.makeText(this, "Please fill depended fields", Toast.LENGTH_SHORT).show();
         } else {
             image2.highLightPixels(image2.getEdges(threshold, 3));
-            imageView2.setImageBitmap(image2.getBitmap());
-        }
-    }
-
-    public void blurEdges(View view) {
-        int threshold;
-
-        if (isEmpty(thresholdInput)) {
-            Toast.makeText(this, "Please fill depended fields", Toast.LENGTH_SHORT).show();
-        } else {
-            threshold = Integer.parseInt(thresholdInput.getText().toString());
-
-            image2.blurEdges(threshold, 9, image2.getEdges(threshold, 9));
             imageView2.setImageBitmap(image2.getBitmap());
         }
     }
