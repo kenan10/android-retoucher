@@ -222,6 +222,8 @@ public class MainActivity extends AppCompatActivity {
             amountOfNotEmptyPixelsThreshold = Integer.parseInt(amountOfNotEmptyInput.getText().toString());
             if (blurEdges) {
                 edgeMaskSize = Integer.parseInt(edgeMaskSizeInput.getText().toString());
+            } else {
+                edgeMaskSize = 3;
             }
             numberOfCutPixels = Integer.parseInt(numberOfCutPixelsInput.getText().toString());
 
