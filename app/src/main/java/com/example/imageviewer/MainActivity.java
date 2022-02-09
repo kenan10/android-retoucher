@@ -208,7 +208,7 @@ public class MainActivity extends AppCompatActivity {
     public void useHybridFilter(View view) {
         int threshold;
         int size;
-        int amountOfNotEmptyPixelsThreshold;
+        int percentOfNotEmpty;
         int edgeMaskSize = 0;
         int numberOfCutPixels;
         boolean blurEdges = blurEdgesSwitch.isChecked();
@@ -219,25 +219,28 @@ public class MainActivity extends AppCompatActivity {
         } else {
             threshold = Integer.parseInt(thresholdInput.getText().toString());
             size = Integer.parseInt(maskSizeInput.getText().toString());
-            amountOfNotEmptyPixelsThreshold = Integer.parseInt(amountOfNotEmptyInput.getText().toString());
+            percentOfNotEmpty = Integer.parseInt(amountOfNotEmptyInput.getText().toString());
             if (blurEdges) {
                 edgeMaskSize = Integer.parseInt(edgeMaskSizeInput.getText().toString());
             } else {
                 edgeMaskSize = 3;
             }
             numberOfCutPixels = Integer.parseInt(numberOfCutPixelsInput.getText().toString());
+            int numberOfNotEmpty = (int) (Math.pow(size, 2) * percentOfNotEmpty) / 100;
 
-            image2.hybridFilter(threshold, size, amountOfNotEmptyPixelsThreshold,numberOfCutPixels, blurEdges, blurEdgesBefore, edgeMaskSize);
+            image2.hybridFilter(threshold, size, numberOfNotEmpty, numberOfCutPixels, blurEdges, blurEdgesBefore, edgeMaskSize);
             imageView2.setImageBitmap(image2.getBitmap());
         }
     }
 
     public void highlightVisibleCracks(View view) {
         int threshold = Integer.parseInt(thresholdInput.getText().toString());
-        int amountOfNotEmpty = Integer.parseInt(amountOfNotEmptyInput.getText().toString());
+        int percentOfNotEmpty = Integer.parseInt(amountOfNotEmptyInput.getText().toString());
         int maskSize = Integer.parseInt(maskSizeInput.getText().toString());
 
-        image2.highlightVisibleCracks(threshold, maskSize, amountOfNotEmpty);
+        int numberOfNotEmpty = (int) (Math.pow(maskSize, 2) * percentOfNotEmpty) / 100;
+
+        image2.highlightVisibleCracks(threshold, maskSize, numberOfNotEmpty);
         imageView2.setImageBitmap(image2.getBitmap());
     }
 

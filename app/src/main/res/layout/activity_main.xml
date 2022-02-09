@@ -67,7 +67,7 @@
         app:layout_constraintHorizontal_bias="0.051"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.466"
+        app:layout_constraintVertical_bias="0.529"
         tools:srcCompat="@tools:sample/backgrounds/scenic" />
 
     <ImageView
@@ -77,10 +77,10 @@
         android:layout_marginStart="3dp"
         app:layout_constraintBottom_toTopOf="@+id/set_reset"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.962"
+        app:layout_constraintHorizontal_bias="0.957"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.466"
+        app:layout_constraintVertical_bias="0.529"
         tools:srcCompat="@tools:sample/backgrounds/scenic" />
 
     <Button
@@ -193,6 +193,7 @@
         android:onClick="setEnabled"
         android:text="@string/blur_edges_switch"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/showEdges"
         app:layout_constraintTop_toBottomOf="@+id/tableLayout" />
 
