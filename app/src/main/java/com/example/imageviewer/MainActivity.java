@@ -18,7 +18,10 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -26,7 +29,6 @@ import android.widget.Switch;
 import android.widget.Toast;
 
 import com.example.imageviewer.Editor.Image;
-import com.example.imageviewer.Editor.Mask;
 import com.google.android.material.slider.LabelFormatter;
 import com.google.android.material.slider.Slider;
 
@@ -40,8 +42,6 @@ public class MainActivity extends AppCompatActivity {
 
     int REQUEST_CODE = 100;
 
-    private Button settingsBtn;
-
     private ImageView imageView1;
     private Bitmap bitmap1;
     private Image image1;
@@ -49,38 +49,34 @@ public class MainActivity extends AppCompatActivity {
     private ImageView imageView2;
     private Bitmap bitmap2;
     private Image image2;
+    private Image previousImage2;
 
-    private EditText thresholdInput;
-    private EditText maskSizeInput;
-    private EditText amountOfNotEmptyInput;
     private EditText edgeMaskSizeInput;
-    private EditText numberOfCutPixelsInput;
 
-    private Button showCracksBtn;
-    private Button showEdgesBtn;
     private Switch blurEdgesSwitch;
-    private Switch blurEdgesBASwitch;
 
     private Button autocontrastBtn;
     private Button hybridFilterBtn;
     private Slider slider;
 
+    private ImageView brightnessTreshholdFullness;
+    private ImageView maskSizeNumberCentral;
 
+    private ImageView brightnessCursor;
+    private ImageView maskSizeCursor;
+
+    private int brightnessThreshold = 230;
+    private int fullnestPercent = 40;
+    private int maskSize = 21;
+    private int centralOffset = 3;
+
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        settingsBtn = findViewById(R.id.settings_btn);
-        settingsBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent myIntent = new Intent(view.getContext(), Settings.class);
-                startActivityForResult(myIntent, 0);
-            }
-        });
-
-        slider = findViewById(R.id.slider);
+        slider = findViewById(R.id.brightnessSlider);
         slider.setLabelFormatter(new LabelFormatter() {
             @NonNull
             @Override
@@ -98,28 +94,151 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        brightnessTreshholdFullness = findViewById(R.id.brightnessTreshholdFullness);
+        brightnessCursor = findViewById(R.id.brightnessCursor);
+        brightnessTreshholdFullness.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                double x = motionEvent.getX();
+                double y = motionEvent.getY();
+                int width = brightnessTreshholdFullness.getWidth();
+                int height = brightnessTreshholdFullness.getHeight();
+                int cursorWidth = brightnessCursor.getWidth();
+                int cursorHeight = brightnessCursor.getHeight();
+
+//                Log.d("my", "x" + x + "\n" + "y" + y);
+
+                int[] cursorPosition = checkCursorMove(x, y, width, height, cursorWidth, cursorHeight);
+                brightnessCursor.setX(cursorPosition[0]);
+                brightnessCursor.setY(cursorPosition[1]);
+
+                if (x < 0) {
+                    x = 0;
+                } else if (x > width) {
+                    x = width;
+                }
+
+                if (y < 0) {
+                    y = 0;
+                } else if (y > width) {
+                    y = height;
+                }
+
+                // I=x/width*(Imax-Imin) + Imin
+                brightnessThreshold = (int) ((x) / width * (255 - 200) + 200);
+                // Log.d("my", String.valueOf(brightnessThreshold));
+
+                // I=(height-y)/height*(Imax-Imin) + Imin
+                fullnestPercent = (int) ((height - y) / height * (95 - 3) + 3);
+//                 Log.d("my", String.valueOf(fullnestPercent));
+
+                int numberOfNotEmpty = (int) (Math.pow(maskSize, 2) * fullnestPercent) / 100;
+                image2.highlightVisibleCracks(brightnessThreshold, maskSize, numberOfNotEmpty);
+                imageView2.setImageBitmap(image2.getBitmap());
+
+                return true;
+            }
+        });
+
+        maskSizeNumberCentral = findViewById(R.id.maskSizeNumberCentral);
+        maskSizeCursor = findViewById(R.id.maskSizeCursor);
+        maskSizeNumberCentral.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                double x = motionEvent.getX();
+                double y = motionEvent.getY();
+                int width = maskSizeNumberCentral.getWidth();
+                int height = maskSizeNumberCentral.getHeight();
+                int cursorWidth = maskSizeCursor.getWidth();
+                int cursorHeight = maskSizeCursor.getHeight();
+
+//                Log.d("my", "x" + x + "\n" + "y" + y);
+
+                int[] cursorPosition = checkCursorMove(x, y, width, height, cursorWidth, cursorHeight);
+                maskSizeCursor.setX((float) (cursorPosition[0] + maskSizeNumberCentral.getX() - cursorHeight * 0.75));
+                maskSizeCursor.setY((float) (cursorPosition[1] + maskSizeNumberCentral.getY() - cursorHeight * 0.75));
+
+                if (x < 0) {
+                    x = 0;
+                } else if (x > width) {
+                    x = width;
+                }
+
+                if (y < 0) {
+                    y = 0;
+                } else if (y > width) {
+                    y = height;
+                }
+
+                // I=x/width*(Imax-Imin) + Imin
+                maskSize = (int) ((x) / width * (71 - 3) + 3);
+                if (maskSize % 2 == 0) {
+                    maskSize += 1;
+                }
+                // Log.d("my", String.valueOf(maskSize));
+
+
+                // I=(height-y)/height*(Imax-Imin) + Imin
+                centralOffset = (int) ((height - y) / height * (21 - 1) + 1);
+                // Log.d("my", String.valueOf(centralOffset));
+
+                int numberOfNotEmpty = (int) (Math.pow(maskSize, 2) * fullnestPercent) / 100;
+                image2.highlightVisibleCracks(brightnessThreshold, maskSize, numberOfNotEmpty);
+                imageView2.setImageBitmap(image2.getBitmap());
+                return true;
+            }
+        });
+
         autocontrastBtn = findViewById(R.id.autoContrastBtn);
         hybridFilterBtn = findViewById(R.id.hybridFilter);
 
         imageView1 = findViewById(R.id.startImage);
         imageView2 = findViewById(R.id.changedImage);
 
-        thresholdInput = findViewById(R.id.editTextNumber2);
-        thresholdInput.setText("230");
+        edgeMaskSizeInput = findViewById(R.id.edgesMaskSize);
 
-        maskSizeInput = findViewById(R.id.editTextNumber3);
-        maskSizeInput.setText("21");
-
-        amountOfNotEmptyInput = findViewById(R.id.editTextNumber4);
-        amountOfNotEmptyInput.setText("40");
-
-        edgeMaskSizeInput = findViewById(R.id.editTextNumber6);
-        numberOfCutPixelsInput = findViewById(R.id.editTextNumber7);
-
-        showCracksBtn = findViewById(R.id.showCracks);
-        showEdgesBtn = findViewById(R.id.showEdges);
         blurEdgesSwitch = findViewById(R.id.blurEdgesSwitch);
-        blurEdgesBASwitch = findViewById(R.id.bluredgesBASwitch);
+    }
+
+    private int[] checkCursorMove(double x, double y, int width, int height, int cursorWidth, int cursorHeight) {
+        int cursorX;
+        int cursorY;
+
+        if (x - cursorWidth / 4 < 0) {
+            cursorX = cursorWidth / 4;
+
+        } else if (x - cursorWidth / 4 > width) {
+            cursorX = width + cursorWidth / 4;
+        } else {
+            cursorX = (int) x;
+        }
+
+        if (y - cursorHeight / 4 < 0) {
+            cursorY = cursorHeight / 4;
+
+        } else if (y - cursorHeight / 4 > height) {
+            cursorY = height + cursorHeight / 4;
+        } else {
+            cursorY = (int) y;
+        }
+
+        return new int[] {cursorX, cursorY};
+    }
+
+    private int[] getSizeOfView(View view) {
+        final int[] size = new int[2];
+
+        final ViewTreeObserver observer = view.getViewTreeObserver();
+        observer.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                size[0] = view.getHeight();
+                size[1] = view.getWidth();
+                observer.removeGlobalOnLayoutListener(this);
+            }
+        });
+
+        return size;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.R)
@@ -163,10 +282,8 @@ public class MainActivity extends AppCompatActivity {
             bitmap2 = ((BitmapDrawable) imageView1.getDrawable()).getBitmap().copy(Bitmap.Config.ARGB_8888, true);
             image2 = new Image(bitmap2);
             imageView2.setImageBitmap(image2.getBitmap());
+            previousImage2 = image2;
 
-
-            showCracksBtn.setEnabled(true);
-            showEdgesBtn.setEnabled(true);
             autocontrastBtn.setEnabled(true);
             hybridFilterBtn.setEnabled(true);
 
@@ -192,7 +309,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setEnabled(View view) {
-        blurEdgesBASwitch.setEnabled(!blurEdgesBASwitch.isEnabled());
         edgeMaskSizeInput.setEnabled(!edgeMaskSizeInput.isEnabled());
     }
 
@@ -206,52 +322,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void useHybridFilter(View view) {
-        int threshold;
-        int size;
-        int percentOfNotEmpty;
-        int edgeMaskSize = 0;
-        int numberOfCutPixels;
+        int edgeMaskSize = 3;
         boolean blurEdges = blurEdgesSwitch.isChecked();
-        boolean blurEdgesBefore = blurEdgesBASwitch.isChecked();
 
-        if ((isEmpty(thresholdInput) || isEmpty(maskSizeInput) || isEmpty(amountOfNotEmptyInput)) || (blurEdges && (isEmpty(edgeMaskSizeInput) || isEmpty(numberOfCutPixelsInput)))) {
-            Toast.makeText(this, "Please fill depended fields", Toast.LENGTH_SHORT).show();
-        } else {
-            threshold = Integer.parseInt(thresholdInput.getText().toString());
-            size = Integer.parseInt(maskSizeInput.getText().toString());
-            percentOfNotEmpty = Integer.parseInt(amountOfNotEmptyInput.getText().toString());
-            if (blurEdges) {
-                edgeMaskSize = Integer.parseInt(edgeMaskSizeInput.getText().toString());
-            } else {
-                edgeMaskSize = 3;
-            }
-            numberOfCutPixels = Integer.parseInt(numberOfCutPixelsInput.getText().toString());
-            int numberOfNotEmpty = (int) (Math.pow(size, 2) * percentOfNotEmpty) / 100;
-
-            image2.hybridFilter(threshold, size, numberOfNotEmpty, numberOfCutPixels, blurEdges, blurEdgesBefore, edgeMaskSize);
-            imageView2.setImageBitmap(image2.getBitmap());
-        }
+        int numberOfNotEmpty = (int) (Math.pow(maskSize, 2) * fullnestPercent) / 100;
+        image2.hybridFilter(brightnessThreshold, maskSize, numberOfNotEmpty, centralOffset, blurEdges, false, edgeMaskSize);
+        imageView2.setImageBitmap(image2.getBitmap());
     }
 
     public void highlightVisibleCracks(View view) {
-        int threshold = Integer.parseInt(thresholdInput.getText().toString());
-        int percentOfNotEmpty = Integer.parseInt(amountOfNotEmptyInput.getText().toString());
-        int maskSize = Integer.parseInt(maskSizeInput.getText().toString());
+        int numberOfNotEmpty = (int) (Math.pow(maskSize, 2) * fullnestPercent) / 100;
 
-        int numberOfNotEmpty = (int) (Math.pow(maskSize, 2) * percentOfNotEmpty) / 100;
-
-        image2.highlightVisibleCracks(threshold, maskSize, numberOfNotEmpty);
+        image2.highlightVisibleCracks(brightnessThreshold, maskSize, numberOfNotEmpty);
         imageView2.setImageBitmap(image2.getBitmap());
     }
 
     public void highlightVisibleEdges(View view) {
-        int threshold = Integer.parseInt(thresholdInput.getText().toString());
-
-        if (isEmpty(thresholdInput)) {
-            Toast.makeText(this, "Please fill depended fields", Toast.LENGTH_SHORT).show();
-        } else {
-            image2.highLightPixels(image2.getEdges(threshold, 3));
-            imageView2.setImageBitmap(image2.getBitmap());
-        }
+        image2.highLightPixels(image2.getEdges(brightnessThreshold, 3));
+        imageView2.setImageBitmap(image2.getBitmap());
     }
 }

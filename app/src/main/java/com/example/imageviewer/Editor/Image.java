@@ -2,7 +2,6 @@ package com.example.imageviewer.Editor;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.os.Build;
 
 import androidx.annotation.NonNull;
 
@@ -361,7 +360,7 @@ public class Image {
     }
 
     // Гібридний фільтр
-    public void hybridFilter(int threshold, int size, int amountOfNotEmptyPixelsThreshold, int amountOfCroppedPixels, boolean blurEdges, boolean before, int blurEdgesMaskSize) {
+    public Bitmap hybridFilter(int threshold, int size, int amountOfNotEmptyPixelsThreshold, int amountOfCroppedPixels, boolean blurEdges, boolean before, int blurEdgesMaskSize) {
         int offset = size / 2;
         // Отримуємо координати країв пошкоджень
         int[][] edges = getEdges(threshold, blurEdgesMaskSize);
@@ -439,6 +438,8 @@ public class Image {
         if (blurEdges && !before) {
             blurEdges(threshold, blurEdgesMaskSize, edges);
         }
+
+        return bitmap;
     }
 
     public void highlightVisibleCracks(int threshold, int maskSize, int amountOfNotEmpty) {
