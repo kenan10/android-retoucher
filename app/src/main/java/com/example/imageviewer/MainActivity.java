@@ -87,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         slider.addOnChangeListener(new Slider.OnChangeListener() {
+            @SuppressLint("RestrictedApi")
             @Override
             public void onValueChange(@NonNull Slider slider, float value, boolean fromUser) {
                 value = (int) value;
@@ -323,7 +324,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void useHybridFilter(View view) {
         int edgeMaskSize = 3;
-        boolean blurEdges = blurEdgesSwitch.isChecked();
+        boolean blurEdges = true; // blurEdgesSwitch.isChecked();
 
         int numberOfNotEmpty = (int) (Math.pow(maskSize, 2) * fullnestPercent) / 100;
         image2.hybridFilter(brightnessThreshold, maskSize, numberOfNotEmpty, centralOffset, blurEdges, false, edgeMaskSize);

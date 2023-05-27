@@ -11,12 +11,14 @@
         android:layout_width="181dp"
         android:layout_height="39dp"
         android:layout_marginStart="16dp"
+        android:layout_marginTop="4dp"
         android:ems="10"
         android:enabled="false"
         android:hint="@string/edges_mask_size"
         android:inputType="number"
-        app:layout_constraintBottom_toTopOf="@+id/startImage"
-        app:layout_constraintStart_toStartOf="parent" />
+        android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView5" />
 
     <com.google.android.material.slider.Slider
         android:id="@+id/brightnessSlider"
@@ -30,7 +32,8 @@
         app:layout_constraintBottom_toTopOf="@+id/autoContrastBtn"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.521"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        tools:ignore="SpeakableTextPresentCheck" />
 
     <Button
         android:id="@+id/autoContrastBtn"
@@ -99,19 +102,19 @@
         android:id="@+id/blurEdgesSwitch"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
         android:layout_marginEnd="32dp"
         android:minHeight="48dp"
         android:onClick="setEnabled"
         android:text="@string/blur_edges_switch"
+        android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/maskSizeNumberCentral" />
+        app:layout_constraintTop_toBottomOf="@+id/textView6" />
 
     <TextView
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="4dp"
+        android:layout_marginStart="4dp"
         android:text="@string/brightness"
         app:layout_constraintBottom_toTopOf="@+id/brightnessSlider"
         app:layout_constraintStart_toStartOf="@+id/brightnessSlider" />
