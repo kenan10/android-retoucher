@@ -1,49 +1,268 @@
 package com.example.imageviewer;
 
-import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewTreeObserver;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
+import android.widget.Switch;
+import android.widget.Toast;
 
+import com.example.imageviewer.Editor.Image;
+import com.google.android.material.slider.LabelFormatter;
+import com.google.android.material.slider.Slider;
+
+@SuppressLint("UseSwitchCompatOrMaterialCode")
 public class MainActivity extends AppCompatActivity {
-    private double[][] maskBlur = {{0, 0.2, 0}, {0.2, 0, 0.2}, {0, 0.2, 0}};
-    private double[][] maskSharpen = {{0, -1, 0}, {-1, 5, -1}, {0, -1, 0}};
+    final double[][] matrixBlur = {
+            {0, 0.2, 0},
+            {0.2, 0.2, 0.2},
+            {0, 0.2, 0}
+    };
 
-    private LinearLayout actionsLayout;
+    int REQUEST_CODE = 100;
 
     private ImageView imageView1;
-    private int[][] argbValues1;
     private Bitmap bitmap1;
+    private Image image1;
 
     private ImageView imageView2;
-    private int[][] argbValues2;
     private Bitmap bitmap2;
+    private Image image2;
+    private Image previousImage2;
 
-    private ImageView imageView3;
-    private int[][] argbValues3;
-    private Bitmap bitmap3;
+    private EditText edgeMaskSizeInput;
 
+    private Switch blurEdgesSwitch;
 
+    private Button autocontrastBtn;
+    private Button hybridFilterBtn;
+    private Slider slider;
+
+    private ImageView brightnessTreshholdFullness;
+    private ImageView maskSizeNumberCentral;
+
+    private ImageView brightnessCursor;
+    private ImageView maskSizeCursor;
+
+    private int brightnessThreshold = 230;
+    private int fullnestPercent = 40;
+    private int maskSize = 21;
+    private int centralOffset = 3;
+
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        slider = findViewById(R.id.brightnessSlider);
+        slider.setLabelFormatter(new LabelFormatter() {
+            @NonNull
+            @Override
+            public String getFormattedValue(float value) {
+                int newValue = (int) value;
+
+                return String.valueOf(newValue);
+            }
+        });
+        slider.addOnChangeListener(new Slider.OnChangeListener() {
+            @SuppressLint("RestrictedApi")
+            @Override
+            public void onValueChange(@NonNull Slider slider, float value, boolean fromUser) {
+                value = (int) value;
+                image2.setBrightness(value);
+            }
+        });
+
+        brightnessTreshholdFullness = findViewById(R.id.brightnessTreshholdFullness);
+        brightnessCursor = findViewById(R.id.brightnessCursor);
+        brightnessTreshholdFullness.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                double x = motionEvent.getX();
+                double y = motionEvent.getY();
+                int width = brightnessTreshholdFullness.getWidth();
+                int height = brightnessTreshholdFullness.getHeight();
+                int cursorWidth = brightnessCursor.getWidth();
+                int cursorHeight = brightnessCursor.getHeight();
+
+//                Log.d("my", "x" + x + "\n" + "y" + y);
+
+                int[] cursorPosition = checkCursorMove(x, y, width, height, cursorWidth, cursorHeight);
+                brightnessCursor.setX(cursorPosition[0]);
+                brightnessCursor.setY(cursorPosition[1]);
+
+                if (x < 0) {
+                    x = 0;
+                } else if (x > width) {
+                    x = width;
+                }
+
+                if (y < 0) {
+                    y = 0;
+                } else if (y > width) {
+                    y = height;
+                }
+
+                // I=x/width*(Imax-Imin) + Imin
+                brightnessThreshold = (int) ((x) / width * (255 - 200) + 200);
+                // Log.d("my", String.valueOf(brightnessThreshold));
+
+                // I=(height-y)/height*(Imax-Imin) + Imin
+                fullnestPercent = (int) ((height - y) / height * (95 - 3) + 3);
+//                 Log.d("my", String.valueOf(fullnestPercent));
+
+                int numberOfNotEmpty = (int) (Math.pow(maskSize, 2) * fullnestPercent) / 100;
+                image2.highlightVisibleCracks(brightnessThreshold, maskSize, numberOfNotEmpty);
+                imageView2.setImageBitmap(image2.getBitmap());
+
+                return true;
+            }
+        });
+
+        maskSizeNumberCentral = findViewById(R.id.maskSizeNumberCentral);
+        maskSizeCursor = findViewById(R.id.maskSizeCursor);
+        maskSizeNumberCentral.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                double x = motionEvent.getX();
+                double y = motionEvent.getY();
+                int width = maskSizeNumberCentral.getWidth();
+                int height = maskSizeNumberCentral.getHeight();
+                int cursorWidth = maskSizeCursor.getWidth();
+                int cursorHeight = maskSizeCursor.getHeight();
+
+//                Log.d("my", "x" + x + "\n" + "y" + y);
+
+                int[] cursorPosition = checkCursorMove(x, y, width, height, cursorWidth, cursorHeight);
+                maskSizeCursor.setX((float) (cursorPosition[0] + maskSizeNumberCentral.getX() - cursorHeight * 0.75));
+                maskSizeCursor.setY((float) (cursorPosition[1] + maskSizeNumberCentral.getY() - cursorHeight * 0.75));
+
+                if (x < 0) {
+                    x = 0;
+                } else if (x > width) {
+                    x = width;
+                }
+
+                if (y < 0) {
+                    y = 0;
+                } else if (y > width) {
+                    y = height;
+                }
+
+                // I=x/width*(Imax-Imin) + Imin
+                maskSize = (int) ((x) / width * (71 - 3) + 3);
+                if (maskSize % 2 == 0) {
+                    maskSize += 1;
+                }
+                // Log.d("my", String.valueOf(maskSize));
+
+
+                // I=(height-y)/height*(Imax-Imin) + Imin
+                centralOffset = (int) ((height - y) / height * (21 - 1) + 1);
+                // Log.d("my", String.valueOf(centralOffset));
+
+                int numberOfNotEmpty = (int) (Math.pow(maskSize, 2) * fullnestPercent) / 100;
+                image2.highlightVisibleCracks(brightnessThreshold, maskSize, numberOfNotEmpty);
+                imageView2.setImageBitmap(image2.getBitmap());
+                return true;
+            }
+        });
+
+        autocontrastBtn = findViewById(R.id.autoContrastBtn);
+        hybridFilterBtn = findViewById(R.id.hybridFilter);
+
         imageView1 = findViewById(R.id.startImage);
         imageView2 = findViewById(R.id.changedImage);
-        imageView3 = findViewById(R.id.changedImage2);
-        actionsLayout = findViewById(R.id.actionsLayout);
+
+        edgeMaskSizeInput = findViewById(R.id.edgesMaskSize);
+
+        blurEdgesSwitch = findViewById(R.id.blurEdgesSwitch);
+    }
+
+    private int[] checkCursorMove(double x, double y, int width, int height, int cursorWidth, int cursorHeight) {
+        int cursorX;
+        int cursorY;
+
+        if (x - cursorWidth / 4 < 0) {
+            cursorX = cursorWidth / 4;
+
+        } else if (x - cursorWidth / 4 > width) {
+            cursorX = width + cursorWidth / 4;
+        } else {
+            cursorX = (int) x;
+        }
+
+        if (y - cursorHeight / 4 < 0) {
+            cursorY = cursorHeight / 4;
+
+        } else if (y - cursorHeight / 4 > height) {
+            cursorY = height + cursorHeight / 4;
+        } else {
+            cursorY = (int) y;
+        }
+
+        return new int[] {cursorX, cursorY};
+    }
+
+    private int[] getSizeOfView(View view) {
+        final int[] size = new int[2];
+
+        final ViewTreeObserver observer = view.getViewTreeObserver();
+        observer.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                size[0] = view.getHeight();
+                size[1] = view.getWidth();
+                observer.removeGlobalOnLayoutListener(this);
+            }
+        });
+
+        return size;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.R)
+    private void askPermission() {
+        ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.MANAGE_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                saveImage(image2.getBitmap());
+            } else {
+                Toast.makeText(MainActivity.this, "Please provide the required permission!", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void saveImage(Bitmap bm) {
+        MediaStore.Images.Media.insertImage(getContentResolver(), bm,
+                "barcodeNumber" + ".jpg Card Image", "barcodeNumber" + ".jpg Card Image");
+        Toast.makeText(MainActivity.this, "Result is succesfully saved!", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -58,20 +277,28 @@ public class MainActivity extends AppCompatActivity {
             Uri uri = data.getData();
             imageView1.setImageURI(uri);
             bitmap1 = ((BitmapDrawable) imageView1.getDrawable()).getBitmap().copy(Bitmap.Config.ARGB_8888, true);
-            argbValues1 = getRgbValuesFromBitmap(bitmap1);
+            image1 = new Image(bitmap1);
 
             imageView2.setImageBitmap(bitmap1);
             bitmap2 = ((BitmapDrawable) imageView1.getDrawable()).getBitmap().copy(Bitmap.Config.ARGB_8888, true);
-            argbValues2 = getRgbValuesFromBitmap(bitmap1);
+            image2 = new Image(bitmap2);
+            imageView2.setImageBitmap(image2.getBitmap());
+            previousImage2 = image2;
 
-            imageView3.setImageBitmap(bitmap1);
-            bitmap3 = ((BitmapDrawable) imageView1.getDrawable()).getBitmap().copy(Bitmap.Config.ARGB_8888, true);
-            argbValues3 = getRgbValuesFromBitmap(bitmap1);
+            autocontrastBtn.setEnabled(true);
+            hybridFilterBtn.setEnabled(true);
 
-
-            for (int i = 0; i < actionsLayout.getChildCount(); i++) {
-                actionsLayout.getChildAt(i).setEnabled(true);
-            }
+            imageView2.setOnClickListener(new View.OnClickListener() {
+                @RequiresApi(api = Build.VERSION_CODES.R)
+                @Override
+                public void onClick(View v) {
+                    if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                        saveImage(image2.getBitmap());
+                    } else {
+                        askPermission();
+                    }
+                }
+            });
         }
     }
 
@@ -82,153 +309,37 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(intent, requestCode);
     }
 
-    private int[][] getRgbValuesFromBitmap(@NonNull Bitmap bitmap) {
-        int[][] argbValues = new int[bitmap.getWidth()][bitmap.getHeight()];
-        for (int i = 0; i < bitmap.getWidth(); i++) {
-            for (int j = 0; j < bitmap.getHeight(); j++) {
-                int pixel = bitmap.getPixel(i, j);
-                argbValues[i][j] = pixel;
-            }
-        }
-        return argbValues;
+    public void setEnabled(View view) {
+        edgeMaskSizeInput.setEnabled(!edgeMaskSizeInput.isEnabled());
     }
 
-    public void makeBrighter(View view) {
-        for (int i = 0; i < bitmap2.getWidth(); i++) {
-            for (int j = 0; j < bitmap2.getHeight(); j++) {
-                int newA = Color.alpha(argbValues2[i][j]);
-                int newR = Math.min(((int) Math.round(Color.red(argbValues2[i][j]) * 1.1)), 255);
-                int newG = Math.min(((int) Math.round(Color.green(argbValues2[i][j]) * 1.1)), 255);
-                int newB = Math.min(((int) Math.round(Color.blue(argbValues2[i][j]) * 1.1)), 255);
-
-
-                argbValues2[i][j] = Color.argb(newA, newR, newG, newB);
-                bitmap2.setPixel(i, j, argbValues2[i][j]);
-            }
-        }
-
-        imageView2.setImageBitmap(bitmap2);
+    private boolean isEmpty(EditText myEditText) {
+        return myEditText.getText().toString().trim().length() == 0;
     }
 
-    public void makeDarker(View view) {
-        for (int i = 0; i < bitmap2.getWidth(); i++) {
-            for (int j = 0; j < bitmap2.getHeight(); j++) {
-                int newA = Color.alpha(argbValues2[i][j]);
-                int newR = (int) Math.round(Color.red(argbValues2[i][j]) * 0.9);
-                int newG = (int) Math.round(Color.green(argbValues2[i][j]) * 0.9);
-                int newB = (int) Math.round(Color.blue(argbValues2[i][j]) * 0.9);
-
-                argbValues2[i][j] = Color.argb(newA, newR, newG, newB);
-                bitmap2.setPixel(i, j, argbValues2[i][j]);
-            }
-        }
-
-        imageView2.setImageBitmap(bitmap2);
+    public void makeAutoContrast(View view) {
+        image2.autoContrast();
+        imageView2.setImageBitmap(image2.getBitmap());
     }
 
-    public void makeNegative(View view) {
-        for (int i = 0; i < bitmap2.getWidth(); i++) {
-            for (int j = 0; j < bitmap2.getHeight(); j++) {
-                int newA = Color.alpha(argbValues2[i][j]);
-                int newR = 256 - Color.red(argbValues2[i][j]);
-                int newG = 256 - Color.green(argbValues2[i][j]);
-                int newB = 256 - Color.blue(argbValues2[i][j]);
+    public void useHybridFilter(View view) {
+        int edgeMaskSize = 3;
+        boolean blurEdges = true; // blurEdgesSwitch.isChecked();
 
-
-                argbValues2[i][j] = Color.argb(newA, newR, newG, newB);
-                bitmap2.setPixel(i, j, argbValues2[i][j]);
-            }
-        }
-
-        imageView2.setImageBitmap(bitmap2);
+        int numberOfNotEmpty = (int) (Math.pow(maskSize, 2) * fullnestPercent) / 100;
+        image2.hybridFilter(brightnessThreshold, maskSize, numberOfNotEmpty, centralOffset, blurEdges, false, edgeMaskSize);
+        imageView2.setImageBitmap(image2.getBitmap());
     }
 
-    private int getMatrixOfCoefficients(@ColorInt int[][] argbValues, int x, int y, String channel, double[][] coefficients) {
-        int result;
-        int summ = 0;
+    public void highlightVisibleCracks(View view) {
+        int numberOfNotEmpty = (int) (Math.pow(maskSize, 2) * fullnestPercent) / 100;
 
-
-        switch (channel) {
-            case "RED":
-                for (int i = -1; i <= 1; i++) {
-                    for (int j = -1; j <= 1; j++) {
-                        summ += 0.12211* Color.red(argbValues[x + i][y + j]);
-                    }
-                }
-                summ = Math.round(summ);
-                result = summ;
-                break;
-            case "GREEN":
-                for (int i = -1; i <= 1; i++) {
-                    for (int j = -1; j <= 1; j++) {
-                        summ += 0.12211* Color.green(argbValues[x + i][y + j]);
-                    }
-                }
-                summ = Math.round(summ);
-                result = summ;
-                break;
-            case "BLUE":
-                for (int i = -1; i <= 1; i++) {
-                    for (int j = -1; j <= 1; j++) {
-                        summ += 0.122111 * Color.blue(argbValues[x + i][y + j]);
-                    }
-                }
-                summ = Math.round(summ);
-                result = summ;
-                break;
-            default:
-                result = Color.BLUE;
-                break;
-        }
-
-        return result;
+        image2.highlightVisibleCracks(brightnessThreshold, maskSize, numberOfNotEmpty);
+        imageView2.setImageBitmap(image2.getBitmap());
     }
 
-    public void makeBlurred(View view) {
-        for (int i = 1; i < bitmap2.getWidth() - 1; i++) {
-            for (int j = 1; j < bitmap2.getHeight() - 1; j++) {
-                int newA = Color.alpha(argbValues2[i][j]);
-                int newR = Math.min(this.getMatrixOfCoefficients(argbValues2, i, j, "RED", maskBlur), 255);
-                int newB = Math.min(this.getMatrixOfCoefficients(argbValues2, i, j, "BLUE", maskBlur), 255);
-                int newG = Math.min(this.getMatrixOfCoefficients(argbValues2, i, j, "GREEN", maskBlur), 255);
-
-                argbValues2[i][j] = Color.argb(newA, newR, newG, newB);
-                bitmap2.setPixel(i, j, argbValues2[i][j]);
-            }
-        }
-
-        imageView2.setImageBitmap(bitmap2);
-    }
-
-    public void makeSharpen(View view) {
-        for (int i = 1; i < bitmap2.getWidth() - 1; i++) {
-            for (int j = 1; j < bitmap2.getHeight() - 1; j++) {
-                int newA = Color.alpha(argbValues2[i][j]);
-                int newR = Math.min(this.getMatrixOfCoefficients(argbValues2, i, j, "RED", maskBlur), 255);
-                int newB = Math.min(this.getMatrixOfCoefficients(argbValues2, i, j, "BLUE", maskBlur), 255);
-                int newG = Math.min(this.getMatrixOfCoefficients(argbValues2, i, j, "GREEN", maskBlur), 255);
-
-                argbValues2[i][j] = Color.argb(newA, newR, newG, newB);
-                bitmap2.setPixel(i, j, argbValues2[i][j]);
-            }
-        }
-
-        imageView2.setImageBitmap(bitmap2);
-    }
-
-    public void makeDifference(View view) {
-        for (int i = 0; i < bitmap2.getWidth(); i++) {
-            for (int j = 0; j < bitmap2.getHeight(); j++) {
-                int newA = Color.alpha(argbValues2[i][j]);
-                int newR = Color.red(argbValues2[i][j] - argbValues1[i][j]);
-                int newG = Color.green(argbValues2[i][j] - argbValues1[i][j]);
-                int newB = Color.blue(argbValues2[i][j] - argbValues1[i][j]);
-
-                argbValues3[i][j] = Color.argb(newA, newR, newG, newB);
-                bitmap3.setPixel(i, j, argbValues2[i][j]);
-            }
-        }
-
-        imageView3.setImageBitmap(bitmap2);
+    public void highlightVisibleEdges(View view) {
+        image2.highLightPixels(image2.getEdges(brightnessThreshold, 3));
+        imageView2.setImageBitmap(image2.getBitmap());
     }
 }

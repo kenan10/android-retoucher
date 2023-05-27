@@ -1,3 +1,32 @@
 <resources>
-    <string name="app_name">Image Viewer</string>
+    <string name="app_name">Restoration</string>
+    <string name="set_reset">Upload</string>
+    <string name="invert">Інвертувати</string>
+    <string name="brighter">Яскравіше</string>
+    <string name="darker">Темніше</string>
+    <string name="blur">Розмити</string>
+    <string name="sharpen">Збільшити різкість</string>
+    <string name="auto_contrast">Autocontrast</string>
+    <string name="blur_edges">Ретушувати краї</string>
+    <string name="gauss_filter">Гаусовий фільтр</string>
+    <string name="adaptive_gauss">Адаптивний Гаус</string>
+    <string name="hybrid_filter">Hybrid filter</string>
+    <string name="median_filter">Медіанний фільтр</string>
+    <string name="cracks">Ретуш</string>
+    <string name="edges">Краї</string>
+    <string name="threshold">Поріг яксравості</string>
+    <string name="edges_mask_size">Розмір маски країв</string>
+    <string name="mask_size">Розмір маски</string>
+    <string name="number_of_cut">Кількість центральних</string>
+    <string name="blur_before">Ретуш до</string>
+    <string name="blur_edges_switch">Ретуш країв</string>
+    <string name="amount_of_not_empty_pixels">Кількість непошкоджених</string>
+    <string name="settings_languages">Мова</string>
+    <string name="brightness" translatable="false">Brightness</string>
+
+    <string-array name="languages">
+        <item>English</item>
+        <item>Ukrainian</item>
+        <item>Chinese</item>
+    </string-array>
 </resources>
